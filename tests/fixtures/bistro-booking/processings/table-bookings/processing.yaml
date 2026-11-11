@@ -9,8 +9,10 @@ legal_basis: contract
 services:
   - repo: bistro-web
     data: [booking-form]
+    recipients: []
   - repo: bistro-api
     data: [guest-contact, booking-details, payment-reference, no-show-history]
+    recipients: [calendar-link, charge-deposit, mailrelay, paygate, send-email, send-sms, textflow-sms]
 security_measures:
   - {measure: Data encrypted in transit (TLS) and at rest, source: {kind: declared, ref: "docs/security.md"}}
   - {measure: Back office access limited to restaurant staff with individual accounts, source: {kind: declared, ref: "docs/security.md"}}

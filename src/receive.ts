@@ -1,8 +1,9 @@
-import { closeSync, constants, lstatSync, mkdirSync, openSync, readFileSync, writeSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import * as core from '@actions/core';
 import { stringify } from 'yaml';
-import { explainGitHubError, type Api } from './api.js';
+import type { Api } from './api.js';
+import { BOT_EMAIL, BOT_NAME, assertNoSymlink, commitPushAndOpenPr, guardBotBranch, remoteAuthEnv, writeNoFollow } from './bot.js';
 import { ActionError } from './errors.js';
 import { mustGit, runGit, type GitRunner } from './git.js';
 import { EVENT_TYPE, parseRepoRef } from './send.js';
@@ -10,8 +11,7 @@ import { SPEC_VERSION, validateDocument, validateText } from './schema.js';
 import type { EventContext, Lag } from './types.js';
 import { lagCount, lagStatus } from './types.js';
 
-export const BOT_NAME = 'compliance-action';
-export const BOT_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com';
+export { BOT_EMAIL, BOT_NAME };
 const NAME_RE = /^[A-Za-z0-9._-]+$/;
 
 export interface ReceiveOptions {
@@ -89,31 +89,6 @@ async function verifySource(o: ReceiveOptions, r: Received): Promise<void> {
   }
 }
 
-/** Refuses a symlink anywhere on the way to a file we are about to write. */
-function assertNoSymlink(root: string, ...parts: string[]): void {
-  let current = root;
-  for (const part of parts) {
-    current = join(current, part);
-    let stat;
-    try {
-      stat = lstatSync(current);
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code === 'ENOENT') return;
-      throw err;
-    }
-    if (stat.isSymbolicLink()) throw new ActionError(`Refused: ${relative(root, current)} is a symbolic link.`);
-  }
-}
-
-function writeNoFollow(path: string, data: string): void {
-  const fd = openSync(path, constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW, 0o644);
-  try {
-    writeSync(fd, data);
-  } finally {
-    closeSync(fd);
-  }
-}
-
 export async function runReceive(o: ReceiveOptions): Promise<void> {
   const git = o.git ?? runGit;
   const root = resolve(o.compliancePath);
@@ -161,35 +136,8 @@ export async function runReceive(o: ReceiveOptions): Promise<void> {
   const base = o.baseBranch;
   const repo = o.ctx.repo;
 
-  // Remote operations authenticate with the token through the environment, never through argv.
-  const basic = Buffer.from(`x-access-token:${o.token}`).toString('base64');
-  core.setSecret(basic);
-  const remoteEnv = {
-    GIT_CONFIG_COUNT: '1',
-    GIT_CONFIG_KEY_0: 'http.https://github.com/.extraheader',
-    GIT_CONFIG_VALUE_0: `AUTHORIZATION: basic ${basic}`,
-  };
-
-  await mustGit(git, ['fetch', '--no-tags', 'origin', base], root, remoteEnv);
-  const remote = await mustGit(git, ['ls-remote', '--heads', 'origin', `refs/heads/${branch}`], root, remoteEnv);
-  const remoteSha = remote.split(/\s+/)[0] ?? '';
-
-  // A human may have edited the bot branch: do not overwrite their work.
-  const existing = await o.api.findOpenPullRequest(repo, branch, base).catch((err: unknown) => {
-    throw new ActionError(explainGitHubError(err, 'Looking for the open pull request'));
-  });
-  if (existing) {
-    const commits = await o.api.listPullRequestCommits(repo, existing.number).catch((err: unknown) => {
-      throw new ActionError(explainGitHubError(err, `Reading pull request #${existing.number}`));
-    });
-    const foreign = commits.filter((c) => c.authorEmail !== BOT_EMAIL);
-    if (foreign.length > 0) {
-      throw new ActionError(`Refused: ${branch} has commits not authored by ${BOT_NAME} (${foreign.map((c) => c.sha.slice(0, 7)).join(', ')}): a human edited the branch of pull request #${existing.number}. Merge or close it first.`);
-    }
-    if (commits.length > 0 && remoteSha && commits[commits.length - 1].sha !== remoteSha) {
-      throw new ActionError(`Refused: ${branch} changed while it was being checked. Run again.`);
-    }
-  }
+  const remoteEnv = remoteAuthEnv(o.token);
+  const { existing, remoteSha } = await guardBotBranch({ git, api: o.api, root, repo, branch, base, remoteEnv });
 
   await mustGit(git, ['checkout', '-B', branch, `origin/${base}`], root);
 
@@ -207,20 +155,6 @@ export async function runReceive(o: ReceiveOptions): Promise<void> {
     return;
   }
   const title = `compliance: update ${r.name} to ${short}`;
-  await mustGit(
-    git,
-    ['-c', `user.name=${BOT_NAME}`, '-c', `user.email=${BOT_EMAIL}`, 'commit', '--quiet', '-m', title],
-    root,
-  );
-
-  // Force-with-lease on the bot-owned branch only, leased on the sha read above.
-  await mustGit(
-    git,
-    ['push', `--force-with-lease=refs/heads/${branch}:${remoteSha}`, 'origin', `HEAD:refs/heads/${branch}`],
-    root,
-    remoteEnv,
-  );
-
   const body = [
     `Manifest of \`${r.repo}\` received at commit \`${r.sha}\`.`,
     '',
@@ -231,15 +165,5 @@ export async function runReceive(o: ReceiveOptions): Promise<void> {
     '',
     'Review and merge to validate. Written by compliance-action; do not edit `services/` by hand.',
   ].join('\n');
-  try {
-    if (existing) {
-      await o.api.updatePullRequest(repo, existing.number, { title, body });
-      core.info(`Updated pull request #${existing.number}: ${existing.url}`);
-    } else {
-      const created = await o.api.createPullRequest(repo, { head: branch, base, title, body });
-      core.info(`Opened pull request #${created.number}: ${created.url}`);
-    }
-  } catch (err) {
-    throw new ActionError(explainGitHubError(err, 'Opening the pull request'));
-  }
+  await commitPushAndOpenPr({ git, api: o.api, root, repo, branch, base, remoteEnv, existing, remoteSha, title, body });
 }

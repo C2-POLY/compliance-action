@@ -1,12 +1,15 @@
 {
   "spec_version": "0.1",
   "source": "C2-POLY/compliance-spec",
-  "commit": "83faf169604c3f549051415fb3cb989fac18bcdc",
+  "commit": "ec6bcc0075a867f7d4e7b7f902a9a2a2dc9f6d22",
   "files": [
     "anchors.schema.json",
     "compliance.schema.json",
     "manifest.schema.json",
     "processing.schema.json",
     "sync.schema.json"
+  ],
+  "templates": [
+    "register/register.md.tmpl"
   ]
 }

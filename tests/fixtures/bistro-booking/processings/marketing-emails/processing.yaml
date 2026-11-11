@@ -11,6 +11,7 @@ services:
     data: [newsletter-contacts]
   - repo: bistro-api
     data: [guest-contact]
+    recipients: []
 recipients:
   - {name: ClientDesk CRM (campaigns), source: {kind: declared, ref: "declared/crm/manifest.yaml"}}
 source: {kind: declared, ref: "marketing team"}

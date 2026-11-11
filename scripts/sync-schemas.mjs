@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Copy the JSON Schemas from a checkout of C2-POLY/compliance-spec into schemas/.
+// Copy the JSON Schemas and the register template from a checkout of C2-POLY/compliance-spec
+// into schemas/ and templates/register/.
 // Usage: node scripts/sync-schemas.mjs <path-to-compliance-spec>
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -21,11 +22,16 @@ if (files.length === 0) {
 }
 for (const f of files) copyFileSync(join(from, f), join(to, f));
 
+const template = 'register.md.tmpl';
+const templateTo = join(dirname(fileURLToPath(import.meta.url)), '..', 'templates', 'register');
+mkdirSync(templateTo, { recursive: true });
+copyFileSync(resolve(source, 'templates', 'register', template), join(templateTo, template));
+
 let commit = 'unknown';
 try {
   commit = execFileSync('git', ['-C', resolve(source), 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 } catch {
   // not a git checkout: keep "unknown"
 }
-writeFileSync(join(to, '..', 'SOURCE.json'), `${JSON.stringify({ spec_version: '0.1', source: 'C2-POLY/compliance-spec', commit, files }, null, 2)}\n`);
-console.log(`Synced ${files.length} schemas from ${from} (spec commit ${commit})`);
+writeFileSync(join(to, '..', 'SOURCE.json'), `${JSON.stringify({ spec_version: '0.1', source: 'C2-POLY/compliance-spec', commit, files, templates: [`register/${template}`] }, null, 2)}\n`);
+console.log(`Synced ${files.length} schemas and the register template from ${from} (spec commit ${commit})`);

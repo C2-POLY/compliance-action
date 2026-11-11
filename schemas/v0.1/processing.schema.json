@@ -25,7 +25,8 @@
         "properties": {
           "repo": { "$ref": "#/$defs/repo_name", "description": "A repo listed in compliance.yaml." },
           "tool": { "$ref": "#/$defs/id", "description": "A declared tool listed in compliance.yaml." },
-          "data": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "personal_data ids of that service's manifest. Absent means all of them." }
+          "data": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "personal_data ids of that service's manifest. Absent means all of them." },
+          "recipients": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "processors and outbound_flows ids of that service's manifest that belong to this processing. Absent means those that share data with the entry's scope." }
         }
       }
     },

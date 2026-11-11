@@ -969,7 +969,7 @@ var require_util = __commonJS({
     var net = __require("node:net");
     var { Blob: Blob2 } = __require("node:buffer");
     var nodeUtil = __require("node:util");
-    var { stringify: stringify2 } = __require("node:querystring");
+    var { stringify: stringify3 } = __require("node:querystring");
     var { EventEmitter: EE } = __require("node:events");
     var { InvalidArgumentError } = require_errors();
     var { headerNameLowerCasedRecord } = require_constants();
@@ -1029,7 +1029,7 @@ var require_util = __commonJS({
       if (url.includes("?") || url.includes("#")) {
         throw new Error('Query params cannot be passed when url already contains "?" or "#".');
       }
-      const stringified = stringify2(queryParams);
+      const stringified = stringify3(queryParams);
       if (stringified) {
         url += "?" + stringified;
       }
@@ -2160,9 +2160,9 @@ var require_dispatcher_base = __commonJS({
       }
       close(callback) {
         if (callback === void 0) {
-          return new Promise((resolve2, reject) => {
+          return new Promise((resolve3, reject) => {
             this.close((err, data) => {
-              return err ? reject(err) : resolve2(data);
+              return err ? reject(err) : resolve3(data);
             });
           });
         }
@@ -2200,12 +2200,12 @@ var require_dispatcher_base = __commonJS({
           err = null;
         }
         if (callback === void 0) {
-          return new Promise((resolve2, reject) => {
+          return new Promise((resolve3, reject) => {
             this.destroy(err, (err2, data) => {
               return err2 ? (
                 /* istanbul ignore next: should never error */
                 reject(err2)
-              ) : resolve2(data);
+              ) : resolve3(data);
             });
           });
         }
@@ -4472,8 +4472,8 @@ var require_util2 = __commonJS({
     function createDeferredPromise() {
       let res;
       let rej;
-      const promise = new Promise((resolve2, reject) => {
-        res = resolve2;
+      const promise = new Promise((resolve3, reject) => {
+        res = resolve3;
         rej = reject;
       });
       return { promise, resolve: res, reject: rej };
@@ -6724,12 +6724,12 @@ upgrade: ${upgrade}\r
           cb();
         }
       }
-      const waitForDrain = () => new Promise((resolve2, reject) => {
+      const waitForDrain = () => new Promise((resolve3, reject) => {
         assert(callback === null);
         if (socket[kError]) {
           reject(socket[kError]);
         } else {
-          callback = resolve2;
+          callback = resolve3;
         }
       });
       socket.on("close", onDrain).on("drain", onDrain);
@@ -7399,12 +7399,12 @@ var require_client_h2 = __commonJS({
           cb();
         }
       }
-      const waitForDrain = () => new Promise((resolve2, reject) => {
+      const waitForDrain = () => new Promise((resolve3, reject) => {
         assert(callback === null);
         if (socket[kError]) {
           reject(socket[kError]);
         } else {
-          callback = resolve2;
+          callback = resolve3;
         }
       });
       h2stream.on("close", onDrain).on("drain", onDrain);
@@ -7883,16 +7883,16 @@ var require_client = __commonJS({
         return this[kNeedDrain] < 2;
       }
       async [kClose]() {
-        return new Promise((resolve2) => {
+        return new Promise((resolve3) => {
           if (this[kSize]) {
-            this[kClosedResolve] = resolve2;
+            this[kClosedResolve] = resolve3;
           } else {
-            resolve2(null);
+            resolve3(null);
           }
         });
       }
       async [kDestroy](err) {
-        return new Promise((resolve2) => {
+        return new Promise((resolve3) => {
           const requests = this[kQueue].splice(this[kPendingIdx]);
           for (let i = 0; i < requests.length; i++) {
             const request2 = requests[i];
@@ -7903,7 +7903,7 @@ var require_client = __commonJS({
               this[kClosedResolve]();
               this[kClosedResolve] = null;
             }
-            resolve2(null);
+            resolve3(null);
           };
           if (this[kHTTPContext]) {
             this[kHTTPContext].destroy(err, callback);
@@ -7954,7 +7954,7 @@ var require_client = __commonJS({
         });
       }
       try {
-        const socket = await new Promise((resolve2, reject) => {
+        const socket = await new Promise((resolve3, reject) => {
           client[kConnector]({
             host,
             hostname,
@@ -7966,7 +7966,7 @@ var require_client = __commonJS({
             if (err) {
               reject(err);
             } else {
-              resolve2(socket2);
+              resolve3(socket2);
             }
           });
         });
@@ -8302,8 +8302,8 @@ var require_pool_base = __commonJS({
         if (this[kQueue].isEmpty()) {
           await Promise.all(this[kClients].map((c) => c.close()));
         } else {
-          await new Promise((resolve2) => {
-            this[kClosedResolve] = resolve2;
+          await new Promise((resolve3) => {
+            this[kClosedResolve] = resolve3;
           });
         }
       }
@@ -9572,7 +9572,7 @@ var require_readable = __commonJS({
         if (this._readableState.closeEmitted) {
           return null;
         }
-        return await new Promise((resolve2, reject) => {
+        return await new Promise((resolve3, reject) => {
           if (this[kContentLength] > limit) {
             this.destroy(new AbortError());
           }
@@ -9585,7 +9585,7 @@ var require_readable = __commonJS({
             if (signal?.aborted) {
               reject(signal.reason ?? new AbortError());
             } else {
-              resolve2(null);
+              resolve3(null);
             }
           }).on("error", noop3).on("data", function(chunk) {
             limit -= chunk.length;
@@ -9604,7 +9604,7 @@ var require_readable = __commonJS({
     }
     async function consume(stream, type) {
       assert(!stream[kConsume]);
-      return new Promise((resolve2, reject) => {
+      return new Promise((resolve3, reject) => {
         if (isUnusable(stream)) {
           const rState = stream._readableState;
           if (rState.destroyed && rState.closeEmitted === false) {
@@ -9621,7 +9621,7 @@ var require_readable = __commonJS({
             stream[kConsume] = {
               type,
               stream,
-              resolve: resolve2,
+              resolve: resolve3,
               reject,
               length: 0,
               body: []
@@ -9691,18 +9691,18 @@ var require_readable = __commonJS({
       return buffer;
     }
     function consumeEnd(consume2) {
-      const { type, body, resolve: resolve2, stream, length } = consume2;
+      const { type, body, resolve: resolve3, stream, length } = consume2;
       try {
         if (type === "text") {
-          resolve2(chunksDecode(body, length));
+          resolve3(chunksDecode(body, length));
         } else if (type === "json") {
-          resolve2(JSON.parse(chunksDecode(body, length)));
+          resolve3(JSON.parse(chunksDecode(body, length)));
         } else if (type === "arrayBuffer") {
-          resolve2(chunksConcat(body, length).buffer);
+          resolve3(chunksConcat(body, length).buffer);
         } else if (type === "blob") {
-          resolve2(new Blob(body, { type: stream[kContentType] }));
+          resolve3(new Blob(body, { type: stream[kContentType] }));
         } else if (type === "bytes") {
-          resolve2(chunksConcat(body, length));
+          resolve3(chunksConcat(body, length));
         }
         consumeFinish(consume2);
       } catch (err) {
@@ -9959,9 +9959,9 @@ var require_api_request = __commonJS({
     };
     function request2(opts, callback) {
       if (callback === void 0) {
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           request2.call(this, opts, (err, data) => {
-            return err ? reject(err) : resolve2(data);
+            return err ? reject(err) : resolve3(data);
           });
         });
       }
@@ -10184,9 +10184,9 @@ var require_api_stream = __commonJS({
     };
     function stream(opts, factory, callback) {
       if (callback === void 0) {
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           stream.call(this, opts, factory, (err, data) => {
-            return err ? reject(err) : resolve2(data);
+            return err ? reject(err) : resolve3(data);
           });
         });
       }
@@ -10471,9 +10471,9 @@ var require_api_upgrade = __commonJS({
     };
     function upgrade(opts, callback) {
       if (callback === void 0) {
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           upgrade.call(this, opts, (err, data) => {
-            return err ? reject(err) : resolve2(data);
+            return err ? reject(err) : resolve3(data);
           });
         });
       }
@@ -10565,9 +10565,9 @@ var require_api_connect = __commonJS({
     };
     function connect(opts, callback) {
       if (callback === void 0) {
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           connect.call(this, opts, (err, data) => {
-            return err ? reject(err) : resolve2(data);
+            return err ? reject(err) : resolve3(data);
           });
         });
       }
@@ -11641,7 +11641,7 @@ var require_dns = __commonJS({
   "node_modules/undici/lib/interceptor/dns.js"(exports, module) {
     "use strict";
     var { isIP } = __require("node:net");
-    var { lookup } = __require("node:dns");
+    var { lookup: lookup2 } = __require("node:dns");
     var DecoratorHandler = require_decorator_handler();
     var { InvalidArgumentError, InformationalError } = require_errors();
     var maxInt = Math.pow(2, 31) - 1;
@@ -11731,7 +11731,7 @@ var require_dns = __commonJS({
         }
       }
       #defaultLookup(origin, opts, cb) {
-        lookup(
+        lookup2(
           origin.hostname,
           {
             all: true,
@@ -14430,7 +14430,7 @@ var require_fetch = __commonJS({
       function dispatch({ body }) {
         const url = requestCurrentURL(request2);
         const agent = fetchParams.controller.dispatcher;
-        return new Promise((resolve2, reject) => agent.dispatch(
+        return new Promise((resolve3, reject) => agent.dispatch(
           {
             path: url.pathname + url.search,
             origin: url.origin,
@@ -14506,7 +14506,7 @@ var require_fetch = __commonJS({
               }
               this.body = new Readable({ read: resume });
               const onError = this.onError.bind(this);
-              resolve2({
+              resolve3({
                 status,
                 statusText,
                 headersList,
@@ -14549,7 +14549,7 @@ var require_fetch = __commonJS({
               for (let i = 0; i < rawHeaders.length; i += 2) {
                 headersList.append(bufferToLowerCasedHeaderName(rawHeaders[i]), rawHeaders[i + 1].toString("latin1"), true);
               }
-              resolve2({
+              resolve3({
                 status,
                 statusText: STATUS_CODES[status],
                 headersList,
@@ -16236,7 +16236,7 @@ var require_util6 = __commonJS({
         throw new Error("Invalid cookie max-age");
       }
     }
-    function stringify2(cookie) {
+    function stringify3(cookie) {
       if (cookie.name.length === 0) {
         return null;
       }
@@ -16294,7 +16294,7 @@ var require_util6 = __commonJS({
       validateCookiePath,
       validateCookieValue,
       toIMFDate,
-      stringify: stringify2
+      stringify: stringify3
     };
   }
 });
@@ -16440,7 +16440,7 @@ var require_cookies = __commonJS({
   "node_modules/undici/lib/web/cookies/index.js"(exports, module) {
     "use strict";
     var { parseSetCookie } = require_parse();
-    var { stringify: stringify2 } = require_util6();
+    var { stringify: stringify3 } = require_util6();
     var { webidl } = require_webidl();
     var { Headers: Headers2 } = require_headers();
     function getCookies(headers) {
@@ -16483,7 +16483,7 @@ var require_cookies = __commonJS({
       webidl.argumentLengthCheck(arguments, 2, "setCookie");
       webidl.brandCheck(headers, Headers2, { strict: false });
       cookie = webidl.converters.Cookie(cookie);
-      const str = stringify2(cookie);
+      const str = stringify3(cookie);
       if (str) {
         headers.append("Set-Cookie", str);
       }
@@ -18290,8 +18290,8 @@ var require_util8 = __commonJS({
       return true;
     }
     function delay(ms) {
-      return new Promise((resolve2) => {
-        setTimeout(resolve2, ms).unref();
+      return new Promise((resolve3) => {
+        setTimeout(resolve3, ms).unref();
       });
     }
     module.exports = {
@@ -19273,11 +19273,11 @@ var require_lib = __commonJS({
     })();
     var __awaiter3 = exports && exports.__awaiter || function(thisArg, _arguments, P, generator) {
       function adopt(value) {
-        return value instanceof P ? value : new P(function(resolve2) {
-          resolve2(value);
+        return value instanceof P ? value : new P(function(resolve3) {
+          resolve3(value);
         });
       }
-      return new (P || (P = Promise))(function(resolve2, reject) {
+      return new (P || (P = Promise))(function(resolve3, reject) {
         function fulfilled(value) {
           try {
             step(generator.next(value));
@@ -19293,7 +19293,7 @@ var require_lib = __commonJS({
           }
         }
         function step(result) {
-          result.done ? resolve2(result.value) : adopt(result.value).then(fulfilled, rejected);
+          result.done ? resolve3(result.value) : adopt(result.value).then(fulfilled, rejected);
         }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
@@ -19380,26 +19380,26 @@ var require_lib = __commonJS({
       }
       readBody() {
         return __awaiter3(this, void 0, void 0, function* () {
-          return new Promise((resolve2) => __awaiter3(this, void 0, void 0, function* () {
+          return new Promise((resolve3) => __awaiter3(this, void 0, void 0, function* () {
             let output = Buffer.alloc(0);
             this.message.on("data", (chunk) => {
               output = Buffer.concat([output, chunk]);
             });
             this.message.on("end", () => {
-              resolve2(output.toString());
+              resolve3(output.toString());
             });
           }));
         });
       }
       readBodyBuffer() {
         return __awaiter3(this, void 0, void 0, function* () {
-          return new Promise((resolve2) => __awaiter3(this, void 0, void 0, function* () {
+          return new Promise((resolve3) => __awaiter3(this, void 0, void 0, function* () {
             const chunks = [];
             this.message.on("data", (chunk) => {
               chunks.push(chunk);
             });
             this.message.on("end", () => {
-              resolve2(Buffer.concat(chunks));
+              resolve3(Buffer.concat(chunks));
             });
           }));
         });
@@ -19607,14 +19607,14 @@ var require_lib = __commonJS({
        */
       requestRaw(info2, data) {
         return __awaiter3(this, void 0, void 0, function* () {
-          return new Promise((resolve2, reject) => {
+          return new Promise((resolve3, reject) => {
             function callbackForResult(err, res) {
               if (err) {
                 reject(err);
               } else if (!res) {
                 reject(new Error("Unknown error"));
               } else {
-                resolve2(res);
+                resolve3(res);
               }
             }
             this.requestRawWithCallback(info2, data, callbackForResult);
@@ -19858,12 +19858,12 @@ var require_lib = __commonJS({
         return __awaiter3(this, void 0, void 0, function* () {
           retryNumber = Math.min(ExponentialBackoffCeiling, retryNumber);
           const ms = ExponentialBackoffTimeSlice * Math.pow(2, retryNumber);
-          return new Promise((resolve2) => setTimeout(() => resolve2(), ms));
+          return new Promise((resolve3) => setTimeout(() => resolve3(), ms));
         });
       }
       _processResponse(res, options) {
         return __awaiter3(this, void 0, void 0, function* () {
-          return new Promise((resolve2, reject) => __awaiter3(this, void 0, void 0, function* () {
+          return new Promise((resolve3, reject) => __awaiter3(this, void 0, void 0, function* () {
             const statusCode = res.message.statusCode || 0;
             const response = {
               statusCode,
@@ -19871,7 +19871,7 @@ var require_lib = __commonJS({
               headers: {}
             };
             if (statusCode === HttpCodes2.NotFound) {
-              resolve2(response);
+              resolve3(response);
             }
             function dateTimeDeserializer(key, value) {
               if (typeof value === "string") {
@@ -19910,7 +19910,7 @@ var require_lib = __commonJS({
               err.result = response.result;
               reject(err);
             } else {
-              resolve2(response);
+              resolve3(response);
             }
           }));
         });
@@ -20049,10 +20049,10 @@ var require_code = __commonJS({
     function interpolate(x) {
       return typeof x == "number" || typeof x == "boolean" || x === null ? x : safeStringify(Array.isArray(x) ? x.join(",") : x);
     }
-    function stringify2(x) {
+    function stringify3(x) {
       return new _Code(safeStringify(x));
     }
-    exports.stringify = stringify2;
+    exports.stringify = stringify3;
     function safeStringify(x) {
       return JSON.stringify(x).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
     }
@@ -22872,7 +22872,7 @@ var require_compile = __commonJS({
       const schOrFunc = root.refs[ref];
       if (schOrFunc)
         return schOrFunc;
-      let _sch = resolve2.call(this, root, ref);
+      let _sch = resolve3.call(this, root, ref);
       if (_sch === void 0) {
         const schema = (_a = root.localRefs) === null || _a === void 0 ? void 0 : _a[ref];
         const { schemaId } = this.opts;
@@ -22899,7 +22899,7 @@ var require_compile = __commonJS({
     function sameSchemaEnv(s1, s2) {
       return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
     }
-    function resolve2(root, ref) {
+    function resolve3(root, ref) {
       let sch;
       while (typeof (sch = this.refs[ref]) == "string")
         ref = sch;
@@ -23763,7 +23763,7 @@ var require_fast_uri = __commonJS({
       }
       return uri;
     }
-    function resolve2(baseURI, relativeURI, options) {
+    function resolve3(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const {
         parsed: baseParsed,
@@ -23799,50 +23799,50 @@ var require_fast_uri = __commonJS({
       schemelessOptions.skipEscape = true;
       return serialize(resolved, schemelessOptions);
     }
-    function resolveComponent(base, relative2, options, skipNormalization) {
+    function resolveComponent(base, relative3, options, skipNormalization) {
       const target = {};
       if (!skipNormalization) {
         base = parse3(serialize(base, options), options);
-        relative2 = parse3(serialize(relative2, options), options);
+        relative3 = parse3(serialize(relative3, options), options);
       }
       options = options || {};
-      if (!options.tolerant && relative2.scheme) {
-        target.scheme = relative2.scheme;
-        target.userinfo = relative2.userinfo;
-        target.host = relative2.host;
-        target.port = relative2.port;
-        target.path = removeDotSegments(relative2.path || "");
-        target.query = relative2.query;
+      if (!options.tolerant && relative3.scheme) {
+        target.scheme = relative3.scheme;
+        target.userinfo = relative3.userinfo;
+        target.host = relative3.host;
+        target.port = relative3.port;
+        target.path = removeDotSegments(relative3.path || "");
+        target.query = relative3.query;
       } else {
-        if (relative2.userinfo !== void 0 || relative2.host !== void 0 || relative2.port !== void 0) {
-          target.userinfo = relative2.userinfo;
-          target.host = relative2.host;
-          target.port = relative2.port;
-          target.path = removeDotSegments(relative2.path || "");
-          target.query = relative2.query;
+        if (relative3.userinfo !== void 0 || relative3.host !== void 0 || relative3.port !== void 0) {
+          target.userinfo = relative3.userinfo;
+          target.host = relative3.host;
+          target.port = relative3.port;
+          target.path = removeDotSegments(relative3.path || "");
+          target.query = relative3.query;
         } else {
-          if (!relative2.path) {
+          if (!relative3.path) {
             target.path = base.path;
-            if (relative2.query !== void 0) {
-              target.query = relative2.query;
+            if (relative3.query !== void 0) {
+              target.query = relative3.query;
             } else {
               target.query = base.query;
             }
           } else {
-            if (relative2.path[0] === "/") {
-              target.path = removeDotSegments(relative2.path);
+            if (relative3.path[0] === "/") {
+              target.path = removeDotSegments(relative3.path);
             } else {
               const baseHasAuthority = base.userinfo !== void 0 || base.host !== void 0 || base.port !== void 0;
               if (baseHasAuthority && !base.path) {
-                target.path = "/" + relative2.path;
+                target.path = "/" + relative3.path;
               } else if (!base.path) {
-                target.path = relative2.path;
+                target.path = relative3.path;
               } else {
-                target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative2.path;
+                target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative3.path;
               }
               target.path = base.scheme === void 0 && !baseHasAuthority && target.path[0] !== "/" ? removeDotSegmentsRelative(target.path) : removeDotSegments(target.path);
             }
-            target.query = relative2.query;
+            target.query = relative3.query;
           }
           target.userinfo = base.userinfo;
           target.host = base.host;
@@ -23850,7 +23850,7 @@ var require_fast_uri = __commonJS({
         }
         target.scheme = base.scheme;
       }
-      target.fragment = relative2.fragment;
+      target.fragment = relative3.fragment;
       return target;
     }
     function equal(uriA, uriB, options) {
@@ -24154,7 +24154,7 @@ var require_fast_uri = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize,
-      resolve: resolve2,
+      resolve: resolve3,
       resolveComponent,
       equal,
       serialize,
@@ -29437,7 +29437,7 @@ var require_stringify = __commonJS({
         props.push(doc.directives.tagString(tag));
       return props.join(" ");
     }
-    function stringify2(item, ctx, onComment, onChompKeep) {
+    function stringify3(item, ctx, onComment, onChompKeep) {
       if (identity.isPair(item))
         return item.toString(ctx, onComment, onChompKeep);
       if (identity.isAlias(item)) {
@@ -29466,7 +29466,7 @@ var require_stringify = __commonJS({
 ${ctx.indent}${str}`;
     }
     exports.createStringifyContext = createStringifyContext;
-    exports.stringify = stringify2;
+    exports.stringify = stringify3;
   }
 });
 
@@ -29476,7 +29476,7 @@ var require_stringifyPair = __commonJS({
     "use strict";
     var identity = require_identity();
     var Scalar = require_Scalar();
-    var stringify2 = require_stringify();
+    var stringify3 = require_stringify();
     var stringifyComment = require_stringifyComment();
     function stringifyPair({ key, value }, ctx, onComment, onChompKeep) {
       const { allNullValues, doc, indent, indentStep, options: { commentString, indentSeq, simpleKeys } } = ctx;
@@ -29498,7 +29498,7 @@ var require_stringifyPair = __commonJS({
       });
       let keyCommentDone = false;
       let chompKeep = false;
-      let str = stringify2.stringify(key, ctx, () => keyCommentDone = true, () => chompKeep = true);
+      let str = stringify3.stringify(key, ctx, () => keyCommentDone = true, () => chompKeep = true);
       if (!explicitKey && !ctx.inFlow && str.length > 1024) {
         if (simpleKeys)
           throw new Error("With simple keys, single line scalar must not span more than 1024 characters");
@@ -29550,7 +29550,7 @@ ${indent}:`;
         ctx.indent = ctx.indent.substring(2);
       }
       let valueCommentDone = false;
-      const valueStr = stringify2.stringify(value, ctx, () => valueCommentDone = true, () => chompKeep = true);
+      const valueStr = stringify3.stringify(value, ctx, () => valueCommentDone = true, () => chompKeep = true);
       let ws = " ";
       if (keyComment || vsb || vcb) {
         ws = vsb ? "\n" : "";
@@ -29691,7 +29691,7 @@ var require_addPairToJSMap = __commonJS({
     "use strict";
     var log = require_log();
     var merge2 = require_merge();
-    var stringify2 = require_stringify();
+    var stringify3 = require_stringify();
     var identity = require_identity();
     var toJS = require_toJS();
     function addPairToJSMap(ctx, map, { key, value }) {
@@ -29727,7 +29727,7 @@ var require_addPairToJSMap = __commonJS({
       if (typeof jsKey !== "object")
         return String(jsKey);
       if (identity.isNode(key) && ctx?.doc) {
-        const strCtx = stringify2.createStringifyContext(ctx.doc, {});
+        const strCtx = stringify3.createStringifyContext(ctx.doc, {});
         strCtx.anchors = /* @__PURE__ */ new Set();
         for (const node of ctx.anchors.keys())
           strCtx.anchors.add(node.anchor);
@@ -29794,12 +29794,12 @@ var require_stringifyCollection = __commonJS({
   "node_modules/yaml/dist/stringify/stringifyCollection.js"(exports) {
     "use strict";
     var identity = require_identity();
-    var stringify2 = require_stringify();
+    var stringify3 = require_stringify();
     var stringifyComment = require_stringifyComment();
     function stringifyCollection(collection, ctx, options) {
       const flow = ctx.inFlow ?? collection.flow;
-      const stringify3 = flow ? stringifyFlowCollection : stringifyBlockCollection;
-      return stringify3(collection, ctx, options);
+      const stringify4 = flow ? stringifyFlowCollection : stringifyBlockCollection;
+      return stringify4(collection, ctx, options);
     }
     function stringifyBlockCollection({ comment, items }, ctx, { blockItemPrefix, flowChars, itemIndent, onChompKeep, onComment }) {
       const { indent, options: { commentString } } = ctx;
@@ -29824,7 +29824,7 @@ var require_stringifyCollection = __commonJS({
           }
         }
         chompKeep = false;
-        let str2 = stringify2.stringify(item, itemCtx, () => comment2 = null, () => chompKeep = true);
+        let str2 = stringify3.stringify(item, itemCtx, () => comment2 = null, () => chompKeep = true);
         if (comment2)
           str2 += stringifyComment.lineComment(str2, itemIndent, commentString(comment2));
         if (chompKeep && comment2)
@@ -29891,7 +29891,7 @@ ${indent}${line}` : "\n";
         }
         if (comment)
           reqNewline = true;
-        let str = stringify2.stringify(item, itemCtx, () => comment = null);
+        let str = stringify3.stringify(item, itemCtx, () => comment = null);
         reqNewline || (reqNewline = lines.length > linesAtValue || str.includes("\n"));
         if (i < items.length - 1) {
           str += ",";
@@ -31252,7 +31252,7 @@ var require_stringifyDocument = __commonJS({
   "node_modules/yaml/dist/stringify/stringifyDocument.js"(exports) {
     "use strict";
     var identity = require_identity();
-    var stringify2 = require_stringify();
+    var stringify3 = require_stringify();
     var stringifyComment = require_stringifyComment();
     function stringifyDocument(doc, options) {
       const lines = [];
@@ -31267,7 +31267,7 @@ var require_stringifyDocument = __commonJS({
       }
       if (hasDirectives)
         lines.push("---");
-      const ctx = stringify2.createStringifyContext(doc, options);
+      const ctx = stringify3.createStringifyContext(doc, options);
       const { commentString } = ctx.options;
       if (doc.commentBefore) {
         if (lines.length !== 1)
@@ -31289,7 +31289,7 @@ var require_stringifyDocument = __commonJS({
           contentComment = doc.contents.comment;
         }
         const onChompKeep = contentComment ? void 0 : () => chompKeep = true;
-        let body = stringify2.stringify(doc.contents, ctx, () => contentComment = null, onChompKeep);
+        let body = stringify3.stringify(doc.contents, ctx, () => contentComment = null, onChompKeep);
         if (contentComment)
           body += stringifyComment.lineComment(body, "", commentString(contentComment));
         if ((body[0] === "|" || body[0] === ">") && lines[lines.length - 1] === "---") {
@@ -31297,7 +31297,7 @@ var require_stringifyDocument = __commonJS({
         } else
           lines.push(body);
       } else {
-        lines.push(stringify2.stringify(doc.contents, ctx));
+        lines.push(stringify3.stringify(doc.contents, ctx));
       }
       if (doc.directives?.docEnd) {
         if (doc.comment) {
@@ -33433,7 +33433,7 @@ var require_cst_scalar = __commonJS({
 var require_cst_stringify = __commonJS({
   "node_modules/yaml/dist/parse/cst-stringify.js"(exports) {
     "use strict";
-    var stringify2 = (cst) => "type" in cst ? stringifyToken(cst) : stringifyItem(cst);
+    var stringify3 = (cst) => "type" in cst ? stringifyToken(cst) : stringifyItem(cst);
     function stringifyToken(token) {
       switch (token.type) {
         case "block-scalar": {
@@ -33486,7 +33486,7 @@ var require_cst_stringify = __commonJS({
         res += stringifyToken(value);
       return res;
     }
-    exports.stringify = stringify2;
+    exports.stringify = stringify3;
   }
 });
 
@@ -35216,7 +35216,7 @@ var require_public_api = __commonJS({
       }
       return doc.toJS(Object.assign({ reviver: _reviver }, options));
     }
-    function stringify2(value, replacer, options) {
+    function stringify3(value, replacer, options) {
       let _replacer = null;
       if (typeof replacer === "function" || Array.isArray(replacer)) {
         _replacer = replacer;
@@ -35241,7 +35241,7 @@ var require_public_api = __commonJS({
     exports.parse = parse3;
     exports.parseAllDocuments = parseAllDocuments;
     exports.parseDocument = parseDocument2;
-    exports.stringify = stringify2;
+    exports.stringify = stringify3;
   }
 });
 
@@ -35459,11 +35459,11 @@ import { EOL as EOL3 } from "os";
 import { constants, promises } from "fs";
 var __awaiter = function(thisArg, _arguments, P, generator) {
   function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve2) {
-      resolve2(value);
+    return value instanceof P ? value : new P(function(resolve3) {
+      resolve3(value);
     });
   }
-  return new (P || (P = Promise))(function(resolve2, reject) {
+  return new (P || (P = Promise))(function(resolve3, reject) {
     function fulfilled(value) {
       try {
         step(generator.next(value));
@@ -35479,7 +35479,7 @@ var __awaiter = function(thisArg, _arguments, P, generator) {
       }
     }
     function step(result) {
-      result.done ? resolve2(result.value) : adopt(result.value).then(fulfilled, rejected);
+      result.done ? resolve3(result.value) : adopt(result.value).then(fulfilled, rejected);
     }
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
@@ -35637,11 +35637,11 @@ var Summary = class {
    */
   addTable(rows) {
     const tableBody = rows.map((row) => {
-      const cells = row.map((cell) => {
-        if (typeof cell === "string") {
-          return this.wrap("td", cell);
+      const cells = row.map((cell2) => {
+        if (typeof cell2 === "string") {
+          return this.wrap("td", cell2);
         }
-        const { header, data, colspan, rowspan } = cell;
+        const { header, data, colspan, rowspan } = cell2;
         const tag = header ? "th" : "td";
         const attrs = Object.assign(Object.assign({}, colspan && { colspan }), rowspan && { rowspan });
         return this.wrap(tag, data, attrs);
@@ -35854,11 +35854,11 @@ var httpClient = __toESM(require_lib(), 1);
 var import_undici2 = __toESM(require_undici(), 1);
 var __awaiter2 = function(thisArg, _arguments, P, generator) {
   function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve2) {
-      resolve2(value);
+    return value instanceof P ? value : new P(function(resolve3) {
+      resolve3(value);
     });
   }
-  return new (P || (P = Promise))(function(resolve2, reject) {
+  return new (P || (P = Promise))(function(resolve3, reject) {
     function fulfilled(value) {
       try {
         step(generator.next(value));
@@ -35874,7 +35874,7 @@ var __awaiter2 = function(thisArg, _arguments, P, generator) {
       }
     }
     function step(result) {
-      result.done ? resolve2(result.value) : adopt(result.value).then(fulfilled, rejected);
+      result.done ? resolve3(result.value) : adopt(result.value).then(fulfilled, rejected);
     }
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
@@ -40343,7 +40343,8 @@ var processing_schema_default = {
         properties: {
           repo: { $ref: "#/$defs/repo_name", description: "A repo listed in compliance.yaml." },
           tool: { $ref: "#/$defs/id", description: "A declared tool listed in compliance.yaml." },
-          data: { type: "array", items: { $ref: "#/$defs/id" }, description: "personal_data ids of that service's manifest. Absent means all of them." }
+          data: { type: "array", items: { $ref: "#/$defs/id" }, description: "personal_data ids of that service's manifest. Absent means all of them." },
+          recipients: { type: "array", items: { $ref: "#/$defs/id" }, description: "processors and outbound_flows ids of that service's manifest that belong to this processing. Absent means those that share data with the entry's scope." }
         }
       }
     },
@@ -40460,13 +40461,16 @@ function parseStrict(text) {
 var SOURCE_default = {
   spec_version: "0.1",
   source: "C2-POLY/compliance-spec",
-  commit: "83faf169604c3f549051415fb3cb989fac18bcdc",
+  commit: "ec6bcc0075a867f7d4e7b7f902a9a2a2dc9f6d22",
   files: [
     "anchors.schema.json",
     "compliance.schema.json",
     "manifest.schema.json",
     "processing.schema.json",
     "sync.schema.json"
+  ],
+  templates: [
+    "register/register.md.tmpl"
   ]
 };
 
@@ -40542,16 +40546,20 @@ function runCheck(manifestPath) {
 }
 
 // src/receive.ts
-import { closeSync, constants as constants3, lstatSync, mkdirSync, openSync, readFileSync as readFileSync3, writeSync } from "node:fs";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { mkdirSync, readFileSync as readFileSync3 } from "node:fs";
+import { isAbsolute, join as join2, relative as relative2, resolve } from "node:path";
 var import_yaml5 = __toESM(require_dist2(), 1);
+
+// src/bot.ts
+import { closeSync, constants as constants3, lstatSync, openSync, writeSync } from "node:fs";
+import { join, relative } from "node:path";
 
 // src/git.ts
 import { execFile } from "node:child_process";
-var runGit = (args, cwd, env) => new Promise((resolve2) => {
+var runGit = (args, cwd, env) => new Promise((resolve3) => {
   execFile("git", args, { cwd, env: env ? { ...process.env, ...env } : process.env, maxBuffer: 64 * 1024 * 1024 }, (error2, stdout, stderr) => {
     const code = error2 ? typeof error2.code === "number" ? error2.code : 1 : 0;
-    resolve2({ code, stdout, stderr: error2 && typeof error2.code !== "number" ? error2.message : stderr });
+    resolve3({ code, stdout, stderr: error2 && typeof error2.code !== "number" ? error2.message : stderr });
   });
 });
 async function mustGit(run2, args, cwd, env) {
@@ -40560,6 +40568,86 @@ async function mustGit(run2, args, cwd, env) {
     throw new ActionError(`git ${args[0]} failed: ${r.stderr.trim().split("\n")[0] || `exit code ${r.code}`}`);
   }
   return r.stdout.trim();
+}
+
+// src/bot.ts
+var BOT_NAME = "compliance-action";
+var BOT_EMAIL = "41898282+github-actions[bot]@users.noreply.github.com";
+function assertNoSymlink(root, ...parts) {
+  let current = root;
+  for (const part of parts) {
+    current = join(current, part);
+    let stat2;
+    try {
+      stat2 = lstatSync(current);
+    } catch (err) {
+      if (err.code === "ENOENT") return;
+      throw err;
+    }
+    if (stat2.isSymbolicLink()) throw new ActionError(`Refused: ${relative(root, current)} is a symbolic link.`);
+  }
+}
+function writeNoFollow(path, data) {
+  const fd = openSync(path, constants3.O_WRONLY | constants3.O_CREAT | constants3.O_TRUNC | constants3.O_NOFOLLOW, 420);
+  try {
+    writeSync(fd, data);
+  } finally {
+    closeSync(fd);
+  }
+}
+function remoteAuthEnv(token) {
+  const basic = Buffer.from(`x-access-token:${token}`).toString("base64");
+  setSecret(basic);
+  return {
+    GIT_CONFIG_COUNT: "1",
+    GIT_CONFIG_KEY_0: "http.https://github.com/.extraheader",
+    GIT_CONFIG_VALUE_0: `AUTHORIZATION: basic ${basic}`
+  };
+}
+async function guardBotBranch(b) {
+  await mustGit(b.git, ["fetch", "--no-tags", "origin", b.base], b.root, b.remoteEnv);
+  const remote = await mustGit(b.git, ["ls-remote", "--heads", "origin", `refs/heads/${b.branch}`], b.root, b.remoteEnv);
+  const remoteSha = remote.split(/\s+/)[0] ?? "";
+  const existing = await b.api.findOpenPullRequest(b.repo, b.branch, b.base).catch((err) => {
+    throw new ActionError(explainGitHubError(err, "Looking for the open pull request"));
+  });
+  if (existing) {
+    const commits = await b.api.listPullRequestCommits(b.repo, existing.number).catch((err) => {
+      throw new ActionError(explainGitHubError(err, `Reading pull request #${existing.number}`));
+    });
+    const foreign = commits.filter((c) => c.authorEmail !== BOT_EMAIL);
+    if (foreign.length > 0) {
+      throw new ActionError(`Refused: ${b.branch} has commits not authored by ${BOT_NAME} (${foreign.map((c) => c.sha.slice(0, 7)).join(", ")}): a human edited the branch of pull request #${existing.number}. Merge or close it first.`);
+    }
+    if (commits.length > 0 && remoteSha && commits[commits.length - 1].sha !== remoteSha) {
+      throw new ActionError(`Refused: ${b.branch} changed while it was being checked. Run again.`);
+    }
+  }
+  return { existing, remoteSha };
+}
+async function commitPushAndOpenPr(b) {
+  await mustGit(
+    b.git,
+    ["-c", `user.name=${BOT_NAME}`, "-c", `user.email=${BOT_EMAIL}`, "commit", "--quiet", "-m", b.title],
+    b.root
+  );
+  await mustGit(
+    b.git,
+    ["push", `--force-with-lease=refs/heads/${b.branch}:${b.remoteSha}`, "origin", `HEAD:refs/heads/${b.branch}`],
+    b.root,
+    b.remoteEnv
+  );
+  try {
+    if (b.existing) {
+      await b.api.updatePullRequest(b.repo, b.existing.number, { title: b.title, body: b.body });
+      info(`Updated pull request #${b.existing.number}: ${b.existing.url}`);
+    } else {
+      const created = await b.api.createPullRequest(b.repo, { head: b.branch, base: b.base, title: b.title, body: b.body });
+      info(`Opened pull request #${created.number}: ${created.url}`);
+    }
+  } catch (err) {
+    throw new ActionError(explainGitHubError(err, "Opening the pull request"));
+  }
 }
 
 // src/lag.ts
@@ -40681,8 +40769,6 @@ async function runSend(o) {
 }
 
 // src/receive.ts
-var BOT_NAME = "compliance-action";
-var BOT_EMAIL = "41898282+github-actions[bot]@users.noreply.github.com";
 var NAME_RE = /^[A-Za-z0-9._-]+$/;
 function readPayload(ctx) {
   if (ctx.eventName !== "repository_dispatch" || ctx.payload.action !== EVENT_TYPE) {
@@ -40700,7 +40786,7 @@ function readPayload(ctx) {
 function assertListed(compliancePath, r) {
   let text;
   try {
-    text = readFileSync3(join(compliancePath, "compliance.yaml"), "utf8");
+    text = readFileSync3(join2(compliancePath, "compliance.yaml"), "utf8");
   } catch {
     throw new ActionError(`compliance.yaml not found in "${compliancePath}". Is the compliance repo checked out?`);
   }
@@ -40728,28 +40814,6 @@ async function verifySource(o, r) {
     if (err instanceof ActionError) throw err;
     const status = err.status;
     throw new ActionError(`Source check failed: could not read ${r.repo}${status ? ` (HTTP ${status})` : ""}. The receive token needs Contents: read on the service repos, or set verify-source to false.`);
-  }
-}
-function assertNoSymlink(root, ...parts) {
-  let current = root;
-  for (const part of parts) {
-    current = join(current, part);
-    let stat2;
-    try {
-      stat2 = lstatSync(current);
-    } catch (err) {
-      if (err.code === "ENOENT") return;
-      throw err;
-    }
-    if (stat2.isSymbolicLink()) throw new ActionError(`Refused: ${relative(root, current)} is a symbolic link.`);
-  }
-}
-function writeNoFollow(path, data) {
-  const fd = openSync(path, constants3.O_WRONLY | constants3.O_CREAT | constants3.O_TRUNC | constants3.O_NOFOLLOW, 420);
-  try {
-    writeSync(fd, data);
-  } finally {
-    closeSync(fd);
   }
 }
 async function runReceive(o) {
@@ -40782,9 +40846,9 @@ async function runReceive(o) {
   };
   const syncErrors = validateDocument("sync", sync);
   if (syncErrors.length > 0) throw new ActionError(`The payload does not make a valid sync record: ${syncErrors[0].instancePath}: ${syncErrors[0].message}. Nothing was written.`);
-  const servicesDir = join(root, "services");
+  const servicesDir = join2(root, "services");
   const dir = resolve(servicesDir, r.name);
-  const rel = relative(servicesDir, dir);
+  const rel = relative2(servicesDir, dir);
   if (rel === "" || rel.startsWith("..") || isAbsolute(rel) || rel !== r.name) {
     throw new ActionError(`Refused: "${r.name}" resolves outside services/.`);
   }
@@ -40792,38 +40856,15 @@ async function runReceive(o) {
   const short = r.sha.slice(0, 7);
   const base = o.baseBranch;
   const repo = o.ctx.repo;
-  const basic = Buffer.from(`x-access-token:${o.token}`).toString("base64");
-  setSecret(basic);
-  const remoteEnv = {
-    GIT_CONFIG_COUNT: "1",
-    GIT_CONFIG_KEY_0: "http.https://github.com/.extraheader",
-    GIT_CONFIG_VALUE_0: `AUTHORIZATION: basic ${basic}`
-  };
-  await mustGit(git, ["fetch", "--no-tags", "origin", base], root, remoteEnv);
-  const remote = await mustGit(git, ["ls-remote", "--heads", "origin", `refs/heads/${branch}`], root, remoteEnv);
-  const remoteSha = remote.split(/\s+/)[0] ?? "";
-  const existing = await o.api.findOpenPullRequest(repo, branch, base).catch((err) => {
-    throw new ActionError(explainGitHubError(err, "Looking for the open pull request"));
-  });
-  if (existing) {
-    const commits = await o.api.listPullRequestCommits(repo, existing.number).catch((err) => {
-      throw new ActionError(explainGitHubError(err, `Reading pull request #${existing.number}`));
-    });
-    const foreign = commits.filter((c) => c.authorEmail !== BOT_EMAIL);
-    if (foreign.length > 0) {
-      throw new ActionError(`Refused: ${branch} has commits not authored by ${BOT_NAME} (${foreign.map((c) => c.sha.slice(0, 7)).join(", ")}): a human edited the branch of pull request #${existing.number}. Merge or close it first.`);
-    }
-    if (commits.length > 0 && remoteSha && commits[commits.length - 1].sha !== remoteSha) {
-      throw new ActionError(`Refused: ${branch} changed while it was being checked. Run again.`);
-    }
-  }
+  const remoteEnv = remoteAuthEnv(o.token);
+  const { existing, remoteSha } = await guardBotBranch({ git, api: o.api, root, repo, branch, base, remoteEnv });
   await mustGit(git, ["checkout", "-B", branch, `origin/${base}`], root);
   assertNoSymlink(root, "services");
   assertNoSymlink(root, "services", r.name);
   for (const f of ["manifest.yaml", "sync.yaml"]) assertNoSymlink(root, "services", r.name, f);
   mkdirSync(dir, { recursive: true });
-  writeNoFollow(join(dir, "manifest.yaml"), r.manifest);
-  writeNoFollow(join(dir, "sync.yaml"), (0, import_yaml5.stringify)(sync));
+  writeNoFollow(join2(dir, "manifest.yaml"), r.manifest);
+  writeNoFollow(join2(dir, "sync.yaml"), (0, import_yaml5.stringify)(sync));
   await mustGit(git, ["add", "--", `services/${r.name}/manifest.yaml`, `services/${r.name}/sync.yaml`], root);
   const staged = await git(["diff", "--cached", "--quiet"], root);
   if (staged.code === 0) {
@@ -40831,17 +40872,6 @@ async function runReceive(o) {
     return;
   }
   const title = `compliance: update ${r.name} to ${short}`;
-  await mustGit(
-    git,
-    ["-c", `user.name=${BOT_NAME}`, "-c", `user.email=${BOT_EMAIL}`, "commit", "--quiet", "-m", title],
-    root
-  );
-  await mustGit(
-    git,
-    ["push", `--force-with-lease=refs/heads/${branch}:${remoteSha}`, "origin", `HEAD:refs/heads/${branch}`],
-    root,
-    remoteEnv
-  );
   const body = [
     `Manifest of \`${r.repo}\` received at commit \`${r.sha}\`.`,
     "",
@@ -40850,17 +40880,323 @@ async function runReceive(o) {
     "",
     "Review and merge to validate. Written by compliance-action; do not edit `services/` by hand."
   ].join("\n");
-  try {
-    if (existing) {
-      await o.api.updatePullRequest(repo, existing.number, { title, body });
-      info(`Updated pull request #${existing.number}: ${existing.url}`);
+  await commitPushAndOpenPr({ git, api: o.api, root, repo, branch, base, remoteEnv, existing, remoteSha, title, body });
+}
+
+// src/register.ts
+import { existsSync as existsSync4, mkdirSync as mkdirSync2, readFileSync as readFileSync4, readdirSync } from "node:fs";
+import { join as join3, resolve as resolve2 } from "node:path";
+var import_yaml6 = __toESM(require_dist2(), 1);
+var REGISTER_BRANCH = "compliance/register";
+var REGISTER_TITLE = "compliance: update the records of processing";
+var TEMPLATE_URL = new URL("../templates/register/register.md.tmpl", import.meta.url);
+var EU_EEA = new Set("AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IS IT LV LI LT LU MT NL NO PL PT RO SK SI ES SE".split(" "));
+var TO_COMPLETE = "To complete";
+var NONE_IDENTIFIED = "None identified in the sources";
+var NO_SOURCE = "\u2014";
+function parseTemplate(template) {
+  const lines = template.split("\n");
+  const last = lines.pop();
+  const root = [];
+  const stack = [];
+  const current = () => stack.length ? stack[stack.length - 1].body : root;
+  for (const line of lines) {
+    const open2 = /^\{\{#each (\w+)\}\}$/.exec(line.trim());
+    if (open2) {
+      const block = { each: open2[1], body: [] };
+      current().push(block);
+      stack.push(block);
+    } else if (line.trim() === "{{/each}}") {
+      if (!stack.pop()) throw new ActionError("Template error: {{/each}} without {{#each}}.");
     } else {
-      const created = await o.api.createPullRequest(repo, { head: branch, base, title, body });
-      info(`Opened pull request #${created.number}: ${created.url}`);
+      if (/\{\{[#/]/.test(line)) throw new ActionError(`Template error: a block tag must be alone on its line: ${line}`);
+      current().push({ text: `${line}
+` });
     }
-  } catch (err) {
-    throw new ActionError(explainGitHubError(err, "Opening the pull request"));
   }
+  if (stack.length > 0) throw new ActionError(`Template error: {{#each ${stack[stack.length - 1].each}}} is not closed.`);
+  if (last) current().push({ text: last });
+  return root;
+}
+function lookup(scopes, name) {
+  for (let i = scopes.length - 1; i >= 0; i--) if (name in scopes[i]) return scopes[i][name];
+  throw new ActionError(`Template error: "${name}" is not in the context.`);
+}
+function renderLine(line, scopes) {
+  let out = "";
+  let from = 0;
+  for (const m of line.matchAll(/\{\{(\w+)\}\}/g)) {
+    const value = lookup(scopes, m[1]);
+    if (typeof value !== "string") throw new ActionError(`Template error: "${m[1]}" is a list, not a text.`);
+    out += line.slice(from, m.index);
+    from = m.index + m[0].length;
+    if (value === "" && out.endsWith(" ") && line[from] === " ") out = out.slice(0, -1);
+    out += value;
+  }
+  return out + line.slice(from);
+}
+function renderNodes(nodes, scopes) {
+  let out = "";
+  for (const node of nodes) {
+    if ("text" in node) {
+      out += renderLine(node.text, scopes);
+    } else {
+      const list = lookup(scopes, node.each);
+      if (typeof list === "string") throw new ActionError(`Template error: "${node.each}" is a text, not a list.`);
+      for (const item of list) out += renderNodes(node.body, [...scopes, item]);
+    }
+  }
+  return out;
+}
+function renderTemplate(template, root) {
+  return `${renderNodes(parseTemplate(template), [root]).replace(/\n+$/, "")}
+`;
+}
+var cmp = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+function cell(value) {
+  return value.replace(/\r\n|\r|\n/g, " ").replace(/\|/g, "\\|").trim();
+}
+var SOURCE_RANK = { code: 0, spec: 1, declared: 2 };
+var sourceRank = (source) => SOURCE_RANK[source.slice(0, source.indexOf(":"))] ?? 3;
+function atomic(cands) {
+  const best = /* @__PURE__ */ new Map();
+  for (const c of cands) {
+    const had = best.get(c.value);
+    if (had === void 0 || sourceRank(c.source) < sourceRank(had) || sourceRank(c.source) === sourceRank(had) && c.source < had) {
+      best.set(c.value, c.source);
+    }
+  }
+  return [...best].map(([value, source]) => ({ value, source })).sort((a, b) => cmp(a.value, b.value));
+}
+function composite(cands) {
+  const seen = /* @__PURE__ */ new Set();
+  return cands.filter((c) => {
+    const key = `${c.value}\0${c.source}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).sort((a, b) => cmp(a.value, b.value) || cmp(a.source, b.source));
+}
+function processingSource(source) {
+  return source.kind === "spec" ? `spec: ${source.ref}` : `declared: ${source.ref}`;
+}
+var duration = (r) => r.trigger ? `${r.duration}, ${r.trigger}` : r.duration;
+var country = (c) => c === "unknown" ? "country unknown" : c;
+function readDoc(root, rel, schema) {
+  const parts = rel.split("/");
+  assertNoSymlink(root, ...parts);
+  let text;
+  try {
+    text = readFileSync4(join3(root, ...parts), "utf8");
+  } catch {
+    throw new ActionError(`${rel} not found (or not readable). Nothing was generated.`);
+  }
+  const { doc, errors } = validateText(schema, text);
+  if (errors.length > 0) throw new ActionError(`${rel} is invalid: ${errors[0].instancePath}: ${errors[0].message}${errors.length > 1 ? ` (and ${errors.length - 1} more)` : ""}. Nothing was generated.`);
+  return doc;
+}
+function listDirs(root, rel) {
+  assertNoSymlink(root, rel);
+  const dir = join3(root, rel);
+  if (!existsSync4(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(cmp);
+}
+function buildRegister(complianceDir, generatedAt) {
+  const root = resolve2(complianceDir);
+  const compliance = readDoc(root, "compliance.yaml", "compliance");
+  const manifests = /* @__PURE__ */ new Map();
+  const load = (repo, tool, who) => {
+    let file;
+    if (repo !== void 0) {
+      if (!compliance.repos.some((r) => r.name === repo)) throw new ActionError(`${who}: repo "${repo}" is not listed in compliance.yaml.`);
+      file = `services/${repo}/manifest.yaml`;
+    } else {
+      const entry = compliance.declared_tools?.find((t) => t.id === tool);
+      if (!entry) throw new ActionError(`${who}: tool "${tool}" is not listed in declared_tools of compliance.yaml.`);
+      file = entry.path;
+    }
+    const known = manifests.get(file);
+    if (known) return known;
+    const doc = readDoc(root, file, "manifest");
+    const m = { file, doc };
+    if (repo !== void 0) {
+      const sync = readDoc(root, `services/${repo}/sync.yaml`, "sync");
+      Object.assign(m, { repo, sha: sync.sha, sha7: sync.sha.slice(0, 7) });
+    }
+    manifests.set(file, m);
+    return m;
+  };
+  const processings = listDirs(root, "processings").filter((d) => existsSync4(join3(root, "processings", d, "processing.yaml"))).map((d) => readDoc(root, `processings/${d}/processing.yaml`, "processing")).sort((a, b) => cmp(a.id, b.id));
+  for (let i = 1; i < processings.length; i++) {
+    if (processings[i].id === processings[i - 1].id) throw new ActionError(`Two processings have the id "${processings[i].id}".`);
+  }
+  const resolved = /* @__PURE__ */ new Map();
+  for (const p of processings) {
+    const who = `processings/${p.id}`;
+    const list = p.services.map((entry) => {
+      const m = load(entry.repo, entry.tool, who);
+      const ids = new Set(m.doc.personal_data.map((d) => d.id));
+      for (const id of entry.data ?? []) {
+        if (!ids.has(id)) throw new ActionError(`${who}: no personal_data "${id}" in ${m.file}.`);
+      }
+      const recipientIds = new Set([...m.doc.processors, ...m.doc.outbound_flows].map((x) => x.id));
+      for (const id of entry.recipients ?? []) {
+        if (!recipientIds.has(id)) throw new ActionError(`${who}: no processor or outbound flow "${id}" in ${m.file}.`);
+      }
+      return {
+        entry,
+        m,
+        scope: entry.data ? new Set(entry.data) : ids,
+        recipients: entry.recipients ? new Set(entry.recipients) : void 0
+      };
+    });
+    resolved.set(p, list);
+  }
+  const inside = /* @__PURE__ */ new Set();
+  for (const r of compliance.repos) {
+    if (existsSync4(join3(root, "services", r.name, "manifest.yaml"))) inside.add(load(r.name, void 0, "compliance.yaml").doc.service.name);
+  }
+  for (const t of compliance.declared_tools ?? []) {
+    if (existsSync4(join3(root, t.path))) inside.add(load(void 0, t.id, "compliance.yaml").doc.service.name);
+  }
+  const anchors = {};
+  for (const list of resolved.values()) {
+    for (const { m } of list) if (m.repo !== void 0) anchors[m.repo] = m.sha;
+  }
+  const sortedAnchors = Object.fromEntries(Object.entries(anchors).sort(([a], [b]) => cmp(a, b)));
+  const check = validateDocument("anchors", { spec_version: SPEC_VERSION, generated_at: generatedAt, repos: Object.fromEntries(Object.entries(sortedAnchors).map(([k, sha]) => [k, { sha }])) });
+  if (check.length > 0) throw new ActionError(`generated_at "${generatedAt}" is not usable: ${check[0].instancePath}: ${check[0].message}.`);
+  const sections = processings.map((p) => {
+    const list = resolved.get(p);
+    const src = (m, s) => {
+      if (s.kind === "spec") return `spec: ${s.ref}`;
+      if (s.kind === "code" && m.repo !== void 0) return `code: ${m.repo}@${m.sha7}:${s.ref}`;
+      return `declared: ${m.file} (${s.ref})`;
+    };
+    const subjects = p.data_subjects.map((value) => ({ value, source: processingSource(p.source) }));
+    const personal = [];
+    const recipientCands = [];
+    const recipientNames = [];
+    const transferCands = [];
+    const storageRows = [];
+    const processors = [];
+    for (const { m, scope, recipients } of list) {
+      const d = m.doc;
+      const inScope = (data) => (data ?? []).some((id) => scope.has(id));
+      for (const item of d.personal_data.filter((x) => scope.has(x.id))) {
+        const source = src(m, item.source);
+        for (const s of item.subjects) subjects.push({ value: s, source });
+        const byCategory = /* @__PURE__ */ new Map();
+        for (const f of item.fields) byCategory.set(f.category, (byCategory.get(f.category) ?? /* @__PURE__ */ new Set()).add(f.name));
+        for (const [category, names] of byCategory) personal.push({ value: `${category}: ${[...names].sort(cmp).join(", ")}`, source });
+      }
+      for (const st of d.storage.filter((x) => inScope(x.data))) {
+        storageRows.push({ value: `${st.id} (${st.kind}): ${duration(st.retention)}`, source: src(m, st.source) });
+      }
+      const wanted = (x) => recipients ? recipients.has(x.id) : x.data === void 0 || inScope(x.data);
+      for (const pr of d.processors.filter(wanted)) {
+        const source = src(m, pr.source);
+        const value = `${pr.name} (${pr.country})`;
+        recipientCands.push({ value, source });
+        recipientNames.push(pr.name);
+        processors.push({ name: pr.name, country: pr.country, safeguard: pr.safeguard });
+        if (pr.transfer_outside_eu === true) transferCands.push({ name: pr.name, country: pr.country, source });
+      }
+      for (const fl of d.outbound_flows.filter(wanted)) {
+        if (inside.has(fl.to.name)) continue;
+        const source = src(m, fl.source);
+        recipientCands.push({ value: `${fl.to.name} (${country(fl.to.country)})`, source });
+        recipientNames.push(fl.to.name);
+        if (fl.to.country === "unknown" || !EU_EEA.has(fl.to.country)) transferCands.push({ name: fl.to.name, country: fl.to.country, source });
+      }
+    }
+    for (const r of p.recipients ?? []) {
+      if (recipientNames.some((n) => r.name === n || r.name.startsWith(`${n} (`))) continue;
+      recipientCands.push({ value: r.name, source: processingSource(r.source) });
+    }
+    const transfers = atomic(
+      transferCands.map((t) => {
+        const who = `${t.name} (${country(t.country)})`;
+        if (t.country === "unknown") return { value: `${who}: destination to assess`, source: t.source };
+        const safeguards = processors.filter((x) => x.name === t.name && x.country === t.country && x.safeguard !== void 0).map((x) => x.safeguard).sort(cmp);
+        return { value: `${who}: ${safeguards[0] ?? "safeguard not declared"}`, source: t.source };
+      })
+    );
+    const rows = [];
+    const add = (item, cands, empty) => {
+      const all = cands.length > 0 ? cands : [{ value: empty ?? TO_COMPLETE, source: NO_SOURCE }];
+      all.forEach((c, i) => rows.push({ item: i === 0 ? item : "", value: c.value, source: c.source }));
+    };
+    add("(a) Controller", [{ value: `${p.controller.name}, ${p.controller.contact}`, source: processingSource(p.source) }]);
+    add("(a) Joint controller", []);
+    add("(a) Representative", []);
+    add("(a) Data protection officer", p.dpo ? [{ value: `${p.dpo.name}, ${p.dpo.contact}`, source: processingSource(p.source) }] : []);
+    add("(b) Purposes", [{ value: p.purpose, source: processingSource(p.source) }]);
+    add("(c) Data subjects", atomic(subjects));
+    add("(c) Personal data", composite(personal));
+    add("(d) Recipients", atomic(recipientCands), NONE_IDENTIFIED);
+    add("(e) Transfers", transfers, NONE_IDENTIFIED);
+    add("(f) Erasure time limits", p.retention ? [{ value: duration(p.retention), source: processingSource(p.retention.source) }] : composite(storageRows));
+    add("(g) Security measures", atomic((p.security_measures ?? []).map((s) => ({ value: s.measure, source: processingSource(s.source) }))));
+    return {
+      id: cell(p.id),
+      name: cell(p.name),
+      rows: rows.map((r) => ({ item: cell(r.item), value: cell(r.value), source: cell(r.source) }))
+    };
+  });
+  let template = readFileSync4(TEMPLATE_URL, "utf8");
+  if (Object.keys(sortedAnchors).length === 0) template = template.replace(/^anchors:\n\{\{#each anchors\}\}\n[\s\S]*?\{\{\/each\}\}\n/m, "anchors: {}\n");
+  const markdown = renderTemplate(template, {
+    spec_version: SPEC_VERSION,
+    generated_at: generatedAt,
+    organisation: cell(compliance.organisation.name),
+    anchors: Object.entries(sortedAnchors).map(([repo, sha]) => ({ repo, sha: JSON.stringify(sha) })),
+    processings: sections
+  });
+  return { markdown, anchors: sortedAnchors };
+}
+function anchorsYaml(anchors, generatedAt) {
+  const doc = {
+    spec_version: SPEC_VERSION,
+    generated_at: generatedAt,
+    repos: Object.fromEntries(Object.entries(anchors).map(([repo, sha]) => [repo, { sha }]))
+  };
+  return (0, import_yaml6.stringify)(doc, { defaultStringType: "QUOTE_DOUBLE", defaultKeyType: "PLAIN" });
+}
+async function runRegister(o) {
+  const git = o.git ?? runGit;
+  const root = resolve2(o.compliancePath);
+  const branch = REGISTER_BRANCH;
+  const base = o.baseBranch;
+  const repo = o.ctx.repo;
+  const remoteEnv = remoteAuthEnv(o.token);
+  const { existing, remoteSha } = await guardBotBranch({ git, api: o.api, root, repo, branch, base, remoteEnv });
+  await mustGit(git, ["checkout", "-B", branch, `origin/${base}`], root);
+  const generatedAt = o.generatedAt || await mustGit(git, ["log", "-1", "--format=%cI"], root);
+  const { markdown, anchors } = buildRegister(root, generatedAt);
+  assertNoSymlink(root, "documents");
+  assertNoSymlink(root, "documents", "register.md");
+  assertNoSymlink(root, "anchors.yaml");
+  mkdirSync2(join3(root, "documents"), { recursive: true });
+  writeNoFollow(join3(root, "documents", "register.md"), markdown);
+  writeNoFollow(join3(root, "anchors.yaml"), anchorsYaml(anchors, generatedAt));
+  await mustGit(git, ["add", "--", "documents/register.md", "anchors.yaml"], root);
+  const staged = await git(["diff", "--cached", "--quiet"], root);
+  if (staged.code === 0) {
+    notice(`The register and anchors.yaml are already up to date with origin/${base}: nothing to commit.`);
+    return;
+  }
+  const body = [
+    "Records of processing activities (GDPR Art. 30(1)) generated from the compliance repo.",
+    "",
+    `- Generated at: \`${generatedAt}\``,
+    `- Repos documented: ${Object.keys(anchors).length > 0 ? Object.entries(anchors).map(([r, sha]) => `\`${r}\` at \`${sha.slice(0, 7)}\``).join(", ") : "none"}`,
+    "",
+    "This document is prepared for review by the controller and its data protection officer. It does not certify compliance with the GDPR. Rows marked `To complete` have no source and need a person.",
+    "",
+    "Merging this pull request records `anchors.yaml`: the lag of each service then restarts from 0. Written by compliance-action; do not edit `documents/register.md` or `anchors.yaml` by hand."
+  ].join("\n");
+  await commitPushAndOpenPr({ git, api: o.api, root, repo, branch, base, remoteEnv, existing, remoteSha, title: REGISTER_TITLE, body });
 }
 
 // src/main.ts
@@ -40914,10 +41250,21 @@ async function run() {
       });
       break;
     }
-    case "register":
-      throw new ActionError('mode "register" is not implemented yet.');
+    case "register": {
+      const token = secretToken();
+      const ctx = eventContext();
+      await runRegister({
+        compliancePath: getInput("compliance-path") || ".",
+        baseBranch: baseBranch(ctx),
+        token,
+        generatedAt: getInput("generated-at") || void 0,
+        ctx,
+        api: createApi(token)
+      });
+      break;
+    }
     default:
-      throw new ActionError(`Unknown mode "${mode}". Use check, send or receive.`);
+      throw new ActionError(`Unknown mode "${mode}". Use check, send, receive or register.`);
   }
 }
 run().catch((err) => {

@@ -1,10 +1,10 @@
 spec_version: "0.1"
 repo: bistro-api
-sha: 7c1e4f9a2b6d8035e1a4c7f90b2d6e8a1c3f5b79
+sha: "7c1e4f9a2b6d8035e1a4c7f90b2d6e8a1c3f5b79"
 received_at: "2026-03-12T09:41:07Z"
 lag:
-  anchor: 4b8d2f6a0c1e9375a2d4f6b8c0e2a4d6f8b1c3e5
+  anchor: "4b8d2f6a0c1e9375a2d4f6b8c0e2a4d6f8b1c3e5"
   count: 2
   commits:
-    - 7c1e4f9a2b6d8035e1a4c7f90b2d6e8a1c3f5b79
-    - 2e5a8c1f4b7d0a3e6c9f2b5d8a1e4c7f0b3d6a9c
+    - "7c1e4f9a2b6d8035e1a4c7f90b2d6e8a1c3f5b79"
+    - "2e5a8c1f4b7d0a3e6c9f2b5d8a1e4c7f0b3d6a9c"

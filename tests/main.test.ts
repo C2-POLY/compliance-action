@@ -26,10 +26,12 @@ describe('main', () => {
     expect(failures).not.toContain(TOKEN);
   });
 
-  it('rejects mode register as not implemented', async () => {
-    inputs({ mode: 'register' });
+  it('masks the token in register mode and needs a base branch', async () => {
+    inputs({ mode: 'register', token: TOKEN });
     await import('../src/main.js');
-    await vi.waitFor(() => expect(core.setFailed).toHaveBeenCalledWith('mode "register" is not implemented yet.'));
+    await vi.waitFor(() => expect(core.setFailed).toHaveBeenCalledWith(expect.stringContaining('base-branch')));
+    expect(core.setSecret).toHaveBeenCalledWith(TOKEN);
+    expect(JSON.stringify(vi.mocked(core.setFailed).mock.calls)).not.toContain(TOKEN);
   });
 
   it('rejects an unknown mode', async () => {

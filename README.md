@@ -127,6 +127,61 @@ This needs a token that can read the service repos (Contents: read on them), so 
 
 **Branch protection of the bot branch.** If a human pushed commits to `compliance/<name>` while its pull request is open, `receive` refuses to reset the branch and fails with a message: merge or close that pull request first.
 
+## Generate the register
+
+The `register` mode runs in the compliance repo. It reads `compliance.yaml`, `processings/*/processing.yaml`, `services/<repo>/{manifest,sync}.yaml` and `declared/<tool>/manifest.yaml` (strict YAML, validated against the vendored v0.1 schemas) and writes the records of processing activities (GDPR Art. 30(1)) to `documents/register.md`, plus `anchors.yaml`. Then it resets the branch `compliance/register` from the base branch, commits as `compliance-action`, pushes it and opens a pull request `compliance: update the records of processing`, or updates the open one.
+
+```yaml
+# .github/workflows/register.yml in bistro-compliance
+name: Register
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/**"
+      - "processings/**"
+      - "declared/**"
+      - "compliance.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compliance-register
+  cancel-in-progress: false
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@<full-sha> # v5
+        with:
+          persist-credentials: false # the action pushes with its own token
+
+      - id: token
+        uses: actions/create-github-app-token@<full-sha> # v2
+        with:
+          app-id: ${{ vars.COMPLIANCE_RECEIVE_APP_ID }}
+          private-key: ${{ secrets.COMPLIANCE_RECEIVE_APP_PRIVATE_KEY }}
+          owner: bistro-org
+          permission-contents: write
+          permission-pull-requests: write
+
+      - uses: C2-POLY/compliance-action@<full-sha> # v1
+        with:
+          mode: register
+          token: ${{ steps.token.outputs.token }}
+```
+
+- **Prepared for review, not certified.** The pull request says that the document is prepared for review by the controller and its data protection officer and does not certify compliance. Rows with no source say `To complete` and need a person. The rules that fill each row, and the provenance of each value, are in [`templates/register/README.md`](https://github.com/C2-POLY/compliance-spec/blob/main/templates/register/README.md) of the spec; the template is vendored in `templates/register/` (see `schemas/SOURCE.json` for the spec commit).
+- **Merging records the anchors.** `anchors.yaml` holds, for each repo a processing refers to, the `sha` of its `sync.yaml`. Once the pull request is merged, the next sync of a service counts its lag from that commit, so the lag of each service resets to 0.
+- **Deterministic.** The same compliance repo and the same `generated-at` give the same bytes. When `generated-at` is not set, the action uses the commit time of the base branch of the compliance repo (`git log -1 --format=%cI`), never the clock, so a rerun on the same commit changes nothing. If nothing changed, the run logs it and stops: no branch, no pull request.
+- **Fails closed.** A processing that points to a repo with no `manifest.yaml` or `sync.yaml`, to a tool missing from `compliance.yaml`, or to an unknown `data` or `recipients` id fails the run and writes nothing: a register that silently omits a service would look complete.
+- **Safe writes.** The action writes only `documents/register.md` and `anchors.yaml`, refuses symbolic links, and pushes the token through the environment of git. It refuses to reset `compliance/register` if a human pushed to it while its pull request is open.
+- **No loop.** The trigger paths do not include `documents/**` or `anchors.yaml`, so merging the register does not start another run. Use the same App as `receive` (or another one with Contents write and Pull requests write): pull requests opened with an App token trigger your checks.
+
 ## Protect the compliance repo
 
 The compliance repo is where a human validates what the services declare. Protect it so that nothing can skip that review:
@@ -157,13 +212,14 @@ updates:
 
 | Input | Default | Meaning |
 | --- | --- | --- |
-| `mode` | required | `check`, `send` or `receive`. (`register` is planned and rejected for now.) |
+| `mode` | required | `check`, `send`, `receive` or `register`. |
 | `manifest` | `.compliance/manifest.yaml` | Path of the manifest in the repo. With `receive`, the path fetched from the service repo to verify the payload. |
 | `compliance-repo` | | `owner/name` of the compliance repo. Required for `send`. |
-| `token` | | Required for `send` (Contents write on the compliance repo) and `receive` (Contents write and Pull requests write on the compliance repo; Contents read on the service repos if `verify-source`). |
+| `token` | | Required for `send` (Contents write on the compliance repo), `receive` (Contents write and Pull requests write on the compliance repo; Contents read on the service repos if `verify-source`) and `register` (Contents write and Pull requests write on the compliance repo). |
 | `verify-source` | `true` | `receive` only: check the payload against the service repo. See above. |
-| `compliance-path` | `.` | Checkout of the compliance repo. Used by `receive`. |
-| `base-branch` | the repo's default branch | Branch whose pushes are sent (`send`); base of the pull request (`receive`). |
+| `compliance-path` | `.` | Checkout of the compliance repo. Used by `receive` and `register`. |
+| `generated-at` | commit time of the base branch of the compliance repo | `register` only: RFC 3339 date-time written in the register and in `anchors.yaml`. |
+| `base-branch` | the repo's default branch | Branch whose pushes are sent (`send`); base of the pull request (`receive`, `register`). |
 
 ## Outputs
 
@@ -190,6 +246,10 @@ The lag is the number of commits `git log <anchor>..<sha> -- <linked_files>`, wh
 ### `receive`
 
 Runs in the compliance repo on `repository_dispatch`. It checks that the repo is listed in `compliance.yaml` with a URL of the form `https://github.com/<owner>/<name>`, validates the manifest again, verifies it against the service repo (unless `verify-source: false`), refuses symbolic links on the way to the files, and writes only `services/<name>/manifest.yaml` and `services/<name>/sync.yaml`. It then resets the branch `compliance/<name>` from the base branch, commits as `compliance-action`, pushes that branch only (force-with-lease: it is a bot-owned branch) and opens a pull request `compliance: update <name> to <short sha>`, or updates the open one.
+
+### `register`
+
+See [Generate the register](#generate-the-register). Writes `documents/register.md` and `anchors.yaml` on the branch `compliance/register` and opens a pull request.
 
 ## Disclaimer
 

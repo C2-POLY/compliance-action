@@ -4,6 +4,7 @@ import { createApi } from './api.js';
 import { runCheck } from './check.js';
 import { ActionError } from './errors.js';
 import { runReceive } from './receive.js';
+import { runRegister } from './register.js';
 import { runSend } from './send.js';
 import type { EventContext } from './types.js';
 
@@ -60,10 +61,21 @@ export async function run(): Promise<void> {
       });
       break;
     }
-    case 'register':
-      throw new ActionError('mode "register" is not implemented yet.');
+    case 'register': {
+      const token = secretToken();
+      const ctx = eventContext();
+      await runRegister({
+        compliancePath: core.getInput('compliance-path') || '.',
+        baseBranch: baseBranch(ctx),
+        token,
+        generatedAt: core.getInput('generated-at') || undefined,
+        ctx,
+        api: createApi(token),
+      });
+      break;
+    }
     default:
-      throw new ActionError(`Unknown mode "${mode}". Use check, send or receive.`);
+      throw new ActionError(`Unknown mode "${mode}". Use check, send, receive or register.`);
   }
 }
 

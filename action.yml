@@ -1,12 +1,12 @@
 name: Compliance manifest
-description: Check a repo's compliance manifest, send it to the organisation's compliance repo, or receive it there.
+description: Check a repo's compliance manifest, send it to the organisation's compliance repo, receive it there, or generate the records of processing.
 author: C2-POLY
 branding:
   icon: shield
   color: blue
 inputs:
   mode:
-    description: "check (validate the manifest), send (push to the base branch: validate and send it to the compliance repo) or receive (in the compliance repo: store a received manifest and open a pull request)."
+    description: "check (validate the manifest), send (push to the base branch: validate and send it to the compliance repo), receive (in the compliance repo: store a received manifest and open a pull request) or register (in the compliance repo: generate the records of processing and anchors.yaml and open a pull request)."
     required: true
   manifest:
     description: Path of the manifest in the repo.
@@ -16,10 +16,10 @@ inputs:
     description: "The compliance repo as owner/name. Required for mode send."
     required: false
   token:
-    description: "Required for modes send and receive. send: Contents write on the compliance repo. receive: Contents write and Pull requests write on the compliance repo, and Contents read on the service repos when verify-source is true. Never printed."
+    description: "Required for modes send, receive and register. send: Contents write on the compliance repo. receive: Contents write and Pull requests write on the compliance repo, and Contents read on the service repos when verify-source is true. register: Contents write and Pull requests write on the compliance repo. Never printed."
     required: false
   compliance-path:
-    description: Checkout of the compliance repo. Used by mode receive.
+    description: Checkout of the compliance repo. Used by modes receive and register.
     required: false
     default: .
   verify-source:
@@ -27,7 +27,10 @@ inputs:
     required: false
     default: "true"
   base-branch:
-    description: "Branch whose pushes are sent (mode send) and base of the pull request (mode receive). Defaults to the repo's default branch."
+    description: "Branch whose pushes are sent (mode send) and base of the pull request (modes receive and register). Defaults to the repo's default branch."
+    required: false
+  generated-at:
+    description: "Mode register: RFC 3339 date-time written in the register and in anchors.yaml. Defaults to the commit time of the compliance repo's base branch, never the wall clock, so that a rerun gives the same bytes."
     required: false
 outputs:
   lag-count:

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.1.0/schema/v0.1/compliance.schema.json",
+  "title": "Compliance repo index",
+  "description": "The repos and external tools that make up the information system. File: compliance.yaml at the root of the compliance repo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "organisation", "repos"],
+  "properties": {
+    "spec_version": { "const": "0.1" },
+    "organisation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": { "name": { "type": "string", "minLength": 1 } }
+    },
+    "repos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "url", "owner", "expected_to_send"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+$", "description": "Repo name without owner; also the folder name under services/." },
+          "url": { "type": "string", "format": "uri" },
+          "owner": { "type": "string", "minLength": 1, "description": "Owning person or team." },
+          "expected_to_send": { "type": "boolean" },
+          "components": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } }
+        }
+      }
+    },
+    "declared_tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "path"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "name": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "pattern": "^declared/[a-z0-9][a-z0-9-]*/manifest\\.yaml$" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+  }
+}

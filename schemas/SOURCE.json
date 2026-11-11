@@ -1,0 +1,12 @@
+{
+  "spec_version": "0.1",
+  "source": "C2-POLY/compliance-spec",
+  "commit": "83faf169604c3f549051415fb3cb989fac18bcdc",
+  "files": [
+    "anchors.schema.json",
+    "compliance.schema.json",
+    "manifest.schema.json",
+    "processing.schema.json",
+    "sync.schema.json"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.1.0/schema/v0.1/anchors.schema.json",
+  "title": "Anchors",
+  "description": "The commit of each repo the documents were generated from. Written by the register generator. File: anchors.yaml at the root of the compliance repo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "generated_at", "repos"],
+  "properties": {
+    "spec_version": { "const": "0.1" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "repos": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[A-Za-z0-9_.-]+$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sha"],
+        "properties": { "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
+      }
+    }
+  }
+}

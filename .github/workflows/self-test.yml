@@ -1,0 +1,37 @@
+name: Self test
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: A valid manifest passes
+        uses: ./
+        with:
+          mode: check
+          manifest: tests/fixtures/manifests/valid.yaml
+
+      - name: An invalid manifest fails
+        id: invalid
+        uses: ./
+        continue-on-error: true
+        with:
+          mode: check
+          manifest: tests/fixtures/manifests/invalid-bad-category.yaml
+
+      - name: The invalid manifest was rejected
+        if: steps.invalid.outcome != 'failure'
+        env:
+          OUTCOME: ${{ steps.invalid.outcome }}
+        run: |
+          echo "::error::mode check accepted an invalid manifest (outcome: $OUTCOME)"
+          exit 1

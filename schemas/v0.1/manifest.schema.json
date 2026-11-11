@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.1.0/schema/v0.1/manifest.schema.json",
+  "title": "Compliance manifest",
+  "description": "What one repo (or one declared external tool) does with personal data. File: .compliance/manifest.yaml.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "service", "personal_data", "storage", "processors", "outbound_flows", "automated_decisions", "ai_features"],
+  "properties": {
+    "spec_version": { "const": "0.1" },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "description", "controller", "source"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "repo": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", "description": "owner/name; absent for declared external tools." },
+        "description": { "type": "string", "minLength": 1 },
+        "controller": { "enum": ["organisation", "user-of-the-app", "shared"] },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "kind"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "kind": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "source": { "$ref": "#/$defs/source" }
+      }
+    },
+    "personal_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "subjects", "fields", "purpose", "source"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "component": { "$ref": "#/$defs/id" },
+          "subjects": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "category"],
+              "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "category": { "enum": ["identity", "contact", "financial", "location", "usage", "professional", "health", "special", "credential", "unknown"] }
+              }
+            }
+          },
+          "purpose": { "type": "string", "minLength": 1 },
+          "legal_basis": { "$ref": "#/$defs/legal_basis" },
+          "source": { "$ref": "#/$defs/source" },
+          "linked_files": { "$ref": "#/$defs/linked_files" }
+        }
+      }
+    },
+    "storage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "location", "data", "retention", "source"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "component": { "$ref": "#/$defs/id" },
+          "kind": { "enum": ["database", "file", "object-storage", "cache", "memory", "keychain", "browser", "log", "backup", "other"] },
+          "location": { "type": "string", "minLength": 1 },
+          "data": { "$ref": "#/$defs/data_refs" },
+          "retention": { "$ref": "#/$defs/retention" },
+          "source": { "$ref": "#/$defs/source" },
+          "linked_files": { "$ref": "#/$defs/linked_files" }
+        }
+      }
+    },
+    "processors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "service", "country", "dpa", "transfer_outside_eu", "source"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "component": { "$ref": "#/$defs/id" },
+          "name": { "type": "string", "minLength": 1 },
+          "service": { "type": "string", "minLength": 1 },
+          "country": { "$ref": "#/$defs/country" },
+          "dpa": { "enum": ["yes", "no", "unknown"] },
+          "transfer_outside_eu": { "type": "boolean" },
+          "safeguard": { "type": "string", "minLength": 1 },
+          "data": { "$ref": "#/$defs/data_refs" },
+          "source": { "$ref": "#/$defs/source" },
+          "linked_files": { "$ref": "#/$defs/linked_files" }
+        }
+      }
+    },
+    "outbound_flows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "to", "data", "purpose", "account", "source"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "component": { "$ref": "#/$defs/id" },
+          "to": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "country"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "country": { "oneOf": [{ "$ref": "#/$defs/country" }, { "const": "unknown" }] }
+            }
+          },
+          "data": { "$ref": "#/$defs/data_refs" },
+          "purpose": { "type": "string", "minLength": 1 },
+          "account": { "enum": ["organisation", "user", "none"] },
+          "source": { "$ref": "#/$defs/source" },
+          "linked_files": { "$ref": "#/$defs/linked_files" }
+        }
+      }
+    },
+    "automated_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "legal_or_similar_effect", "human_review", "source"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "component": { "$ref": "#/$defs/id" },
+          "description": { "type": "string", "minLength": 1 },
+          "legal_or_similar_effect": { "type": "boolean" },
+          "human_review": { "type": "boolean" },
+          "source": { "$ref": "#/$defs/source" },
+          "linked_files": { "$ref": "#/$defs/linked_files" }
+        }
+      }
+    },
+    "ai_features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "generates_content", "interacts_with_persons", "human_review", "source"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "component": { "$ref": "#/$defs/id" },
+          "description": { "type": "string", "minLength": 1 },
+          "generates_content": { "type": "boolean" },
+          "interacts_with_persons": { "type": "boolean" },
+          "human_review": { "type": "boolean" },
+          "marking": { "type": "string", "minLength": 1 },
+          "data": { "$ref": "#/$defs/data_refs" },
+          "source": { "$ref": "#/$defs/source" },
+          "linked_files": { "$ref": "#/$defs/linked_files" }
+        }
+      }
+    },
+    "linked_files": { "$ref": "#/$defs/linked_files" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "country": { "type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2." },
+    "legal_basis": { "enum": ["consent", "contract", "legal-obligation", "vital-interests", "public-task", "legitimate-interests", "not-applicable"] },
+    "data_refs": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "Ids of personal_data items of the same manifest." },
+    "linked_files": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "Glob patterns, relative to the repo root." },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": { "enum": ["code", "spec", "declared"] },
+        "ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration"],
+      "properties": {
+        "duration": {
+          "type": "string",
+          "pattern": "^(none|session|unknown|P(?!$)(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?=\\d)(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?)$",
+          "description": "An ISO 8601 duration (P3Y, P30D, PT12H) or none, session, unknown."
+        },
+        "trigger": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

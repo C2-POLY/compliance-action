@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.1.0/schema/v0.1/processing.schema.json",
+  "title": "Processing activity",
+  "description": "One processing activity of the organisation (GDPR Art. 30). File: processings/<id>/processing.yaml in the compliance repo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "id", "name", "purpose", "controller", "data_subjects", "legal_basis", "services", "source"],
+  "properties": {
+    "spec_version": { "const": "0.1" },
+    "id": { "$ref": "#/$defs/id" },
+    "name": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1 },
+    "controller": { "$ref": "#/$defs/contact" },
+    "dpo": { "$ref": "#/$defs/contact" },
+    "data_subjects": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "legal_basis": { "enum": ["consent", "contract", "legal-obligation", "vital-interests", "public-task", "legitimate-interests", "not-applicable"] },
+    "services": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "oneOf": [{ "required": ["repo"] }, { "required": ["tool"] }],
+        "properties": {
+          "repo": { "$ref": "#/$defs/repo_name", "description": "A repo listed in compliance.yaml." },
+          "tool": { "$ref": "#/$defs/id", "description": "A declared tool listed in compliance.yaml." },
+          "data": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "personal_data ids of that service's manifest. Absent means all of them." }
+        }
+      }
+    },
+    "security_measures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["measure", "source"],
+        "properties": { "measure": { "type": "string", "minLength": 1 }, "source": { "$ref": "#/$defs/source" } }
+      }
+    },
+    "recipients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "source"],
+        "properties": { "name": { "type": "string", "minLength": 1 }, "source": { "$ref": "#/$defs/source" } }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration", "source"],
+      "properties": {
+        "duration": { "type": "string", "pattern": "^(none|session|unknown|P(?!$)(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?=\\d)(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?)$" },
+        "trigger": { "type": "string", "minLength": 1 },
+        "source": { "$ref": "#/$defs/source" }
+      }
+    },
+    "source": { "$ref": "#/$defs/source" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "repo_name": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+$" },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "contact"],
+      "properties": { "name": { "type": "string", "minLength": 1 }, "contact": { "type": "string", "minLength": 1 } }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": { "kind": { "enum": ["code", "spec", "declared"] }, "ref": { "type": "string", "minLength": 1 } }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+name: Compliance manifest
+description: Check a repo's compliance manifest, send it to the organisation's compliance repo, or receive it there.
+author: C2-POLY
+branding:
+  icon: shield
+  color: blue
+inputs:
+  mode:
+    description: "check (validate the manifest), send (push to the base branch: validate and send it to the compliance repo) or receive (in the compliance repo: store a received manifest and open a pull request)."
+    required: true
+  manifest:
+    description: Path of the manifest in the repo.
+    required: false
+    default: .compliance/manifest.yaml
+  compliance-repo:
+    description: "The compliance repo as owner/name. Required for mode send."
+    required: false
+  token:
+    description: "Required for modes send and receive. send: Contents write on the compliance repo. receive: Contents write and Pull requests write on the compliance repo, and Contents read on the service repos when verify-source is true. Never printed."
+    required: false
+  compliance-path:
+    description: Checkout of the compliance repo. Used by mode receive.
+    required: false
+    default: .
+  verify-source:
+    description: "Mode receive: check the payload against the service repo (manifest identical at the sent commit, commit on the default branch) before writing. The token then needs Contents: read on the service repos. Set to false only when every repo that can send is trusted."
+    required: false
+    default: "true"
+  base-branch:
+    description: "Branch whose pushes are sent (mode send) and base of the pull request (mode receive). Defaults to the repo's default branch."
+    required: false
+outputs:
+  lag-count:
+    description: "Number of commits since the last generated documents that touch the manifest's linked_files (mode send). 0 when never documented or unknown."
+  lag-status:
+    description: "in-sync, behind, never-documented or unknown (mode send)."
+runs:
+  using: node24
+  main: dist/index.js

@@ -1,0 +1,25 @@
+spec_version: "0.1"
+id: table-bookings
+name: Table bookings
+purpose: Take, confirm, remind and secure table bookings made by guests.
+controller: {name: Bistro Booking Group, contact: privacy@bistro-booking.example}
+dpo: {name: Data protection office, contact: dpo@bistro-booking.example}
+data_subjects: [restaurant guests]
+legal_basis: contract
+services:
+  - repo: bistro-web
+    data: [booking-form]
+  - repo: bistro-api
+    data: [guest-contact, booking-details, payment-reference, no-show-history]
+security_measures:
+  - {measure: Data encrypted in transit (TLS) and at rest, source: {kind: declared, ref: "docs/security.md"}}
+  - {measure: Back office access limited to restaurant staff with individual accounts, source: {kind: declared, ref: "docs/security.md"}}
+recipients:
+  - {name: TextFlow SMS (SMS reminders), source: {kind: declared, ref: "services/bistro-api/manifest.yaml"}}
+  - {name: MailRelay (email confirmations), source: {kind: declared, ref: "services/bistro-api/manifest.yaml"}}
+  - {name: PayGate (card deposits), source: {kind: declared, ref: "services/bistro-api/manifest.yaml"}}
+retention:
+  duration: P3Y
+  trigger: after the last booking of the guest
+  source: {kind: declared, ref: "records of processing policy"}
+source: {kind: declared, ref: "operations team"}

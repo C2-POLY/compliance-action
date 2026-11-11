@@ -1,0 +1,31 @@
+{
+  "name": "compliance-action",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GitHub Action that keeps a repo's compliance manifest in step with its code.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "all": "npm run typecheck && npm test && npm run build",
+    "sync-schemas": "node scripts/sync-schemas.mjs"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.1",
+    "@actions/github": "^9.1.1",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

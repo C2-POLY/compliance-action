@@ -1,0 +1,21 @@
+# expect: /personal_data/0 required
+spec_version: "0.1"
+service: {name: Bistro Booking API, description: Booking API., controller: organisation, source: {kind: declared, ref: README.md}}
+personal_data:
+  - id: guest-contact
+    subjects: [restaurant guests]
+    fields:
+      - {name: guest email, category: contact}
+    purpose: confirm bookings
+
+storage:
+  - id: main-db
+    kind: database
+    location: PostgreSQL, EU
+    data: [guest-contact]
+    retention: {duration: P3Y, trigger: after the last booking}
+    source: {kind: code, ref: "db/migrations/**"}
+processors: []
+outbound_flows: []
+automated_decisions: []
+ai_features: []

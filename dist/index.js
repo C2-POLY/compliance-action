@@ -41163,6 +41163,23 @@ function anchorsYaml(anchors, generatedAt) {
   };
   return (0, import_yaml6.stringify)(doc, { defaultStringType: "QUOTE_DOUBLE", defaultKeyType: "PLAIN" });
 }
+function previousGeneratedAt(root) {
+  const path = join3(root, "anchors.yaml");
+  if (!existsSync4(path)) return null;
+  try {
+    const doc = parseStrict(readFileSync4(path, "utf8"));
+    if (validateDocument("anchors", doc).length > 0) return null;
+    return doc.generated_at;
+  } catch {
+    return null;
+  }
+}
+function isUpToDate(root, previous) {
+  const registerPath = join3(root, "documents", "register.md");
+  if (!existsSync4(registerPath)) return false;
+  const same = buildRegister(root, previous);
+  return readFileSync4(registerPath, "utf8") === same.markdown && readFileSync4(join3(root, "anchors.yaml"), "utf8") === anchorsYaml(same.anchors, previous);
+}
 async function runRegister(o) {
   const git = o.git ?? runGit;
   const root = resolve2(o.compliancePath);
@@ -41172,11 +41189,16 @@ async function runRegister(o) {
   const remoteEnv = remoteAuthEnv(o.token);
   const { existing, remoteSha } = await guardBotBranch({ git, api: o.api, root, repo, branch, base, remoteEnv });
   await mustGit(git, ["checkout", "-B", branch, `origin/${base}`], root);
-  const generatedAt = o.generatedAt || await mustGit(git, ["log", "-1", "--format=%cI"], root);
-  const { markdown, anchors } = buildRegister(root, generatedAt);
   assertNoSymlink(root, "documents");
   assertNoSymlink(root, "documents", "register.md");
   assertNoSymlink(root, "anchors.yaml");
+  const previous = previousGeneratedAt(root);
+  if (previous && isUpToDate(root, previous)) {
+    notice(`The register and anchors.yaml are already up to date with origin/${base}: nothing to commit.`);
+    return;
+  }
+  const generatedAt = o.generatedAt || await mustGit(git, ["log", "-1", "--format=%cI"], root);
+  const { markdown, anchors } = buildRegister(root, generatedAt);
   mkdirSync2(join3(root, "documents"), { recursive: true });
   writeNoFollow(join3(root, "documents", "register.md"), markdown);
   writeNoFollow(join3(root, "anchors.yaml"), anchorsYaml(anchors, generatedAt));

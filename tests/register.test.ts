@@ -273,6 +273,36 @@ describe('mode register', () => {
     expect(git(remote, 'rev-list', '--count', 'refs/heads/main')).toBe('1');
   });
 
+  it('does nothing when a commit changes only what the register does not show (generated_at stays)', async () => {
+    const { dir, remote } = complianceRepo(); // main already holds the generated files
+    const before = readFileSync(join(dir, 'anchors.yaml'), 'utf8');
+    write(dir, 'README.md', 'A compliance repo.\n');
+    git(dir, 'add', 'README.md');
+    git(dir, 'commit', '-q', '-m', 'readme', '--date=2030-01-01T00:00:00+00:00');
+    git(dir, 'push', '-q', 'origin', 'main');
+    const api = mockApi();
+    await run({ compliancePath: dir, api, generatedAt: undefined });
+    expect(api.createPullRequest).not.toHaveBeenCalled();
+    expect(api.updatePullRequest).not.toHaveBeenCalled();
+    expect(git(remote, 'branch', '--list')).not.toMatch(/compliance\/register/);
+    expect(git(remote, 'rev-list', '--count', 'refs/heads/main')).toBe('2');
+    expect(readFileSync(join(dir, 'anchors.yaml'), 'utf8')).toBe(before);
+  });
+
+  it('takes the new date when the content changes', async () => {
+    const { dir } = complianceRepo();
+    const previous = parse(readFileSync(join(dir, 'anchors.yaml'), 'utf8')).generated_at;
+    write(dir, 'processings/table-bookings/processing.yaml', readFileSync(join(dir, 'processings/table-bookings/processing.yaml'), 'utf8').replace('Take, confirm', 'Take, change, confirm'));
+    git(dir, 'commit', '-qam', 'edit purpose');
+    git(dir, 'push', '-q', 'origin', 'main');
+    const api = mockApi();
+    await run({ compliancePath: dir, api, generatedAt: undefined });
+    const now = parse(readFileSync(join(dir, 'anchors.yaml'), 'utf8')).generated_at;
+    expect(now).not.toBe(previous);
+    expect(now).toBe(git(dir, 'log', '-1', '--format=%cI', 'origin/main'));
+    expect(api.createPullRequest).toHaveBeenCalledTimes(1);
+  });
+
   it('fails without writing or pushing when a reference is unresolved', async () => {
     const { dir, remote } = bareCompliance();
     git(dir, 'rm', '-q', 'services/bistro-web/sync.yaml');

@@ -6,6 +6,7 @@ import type { Api } from './api.js';
 import { BOT_EMAIL, BOT_NAME, assertNoSymlink, commitPushAndOpenPr, guardBotBranch, remoteAuthEnv, writeNoFollow } from './bot.js';
 import { ActionError } from './errors.js';
 import { mustGit, runGit, type GitRunner } from './git.js';
+import { parseStrict } from './yaml.js';
 import { SPEC_VERSION, validateDocument, validateText, type SchemaName } from './schema.js';
 import type { EventContext } from './types.js';
 
@@ -379,6 +380,31 @@ export function anchorsYaml(anchors: Record<string, string>, generatedAt: string
   return stringify(doc, { defaultStringType: 'QUOTE_DOUBLE', defaultKeyType: 'PLAIN' });
 }
 
+/** generated_at of the anchors.yaml already on the base branch, or null when there is none or it cannot be read. */
+function previousGeneratedAt(root: string): string | null {
+  const path = join(root, 'anchors.yaml');
+  if (!existsSync(path)) return null;
+  try {
+    const doc = parseStrict(readFileSync(path, 'utf8'));
+    if (validateDocument('anchors', doc).length > 0) return null;
+    return (doc as { generated_at: string }).generated_at;
+  } catch {
+    return null;
+  }
+}
+
+/** True when regenerating with the previous generated_at gives the files already there, byte for byte. */
+function isUpToDate(root: string, previous: string): boolean {
+  const registerPath = join(root, 'documents', 'register.md');
+  if (!existsSync(registerPath)) return false;
+  // previous passed the anchors schema, so buildRegister only fails on what the regular build fails on.
+  const same = buildRegister(root, previous);
+  return (
+    readFileSync(registerPath, 'utf8') === same.markdown &&
+    readFileSync(join(root, 'anchors.yaml'), 'utf8') === anchorsYaml(same.anchors, previous)
+  );
+}
+
 // ---------- the mode ----------
 
 export interface RegisterOptions {
@@ -403,12 +429,21 @@ export async function runRegister(o: RegisterOptions): Promise<void> {
   const { existing, remoteSha } = await guardBotBranch({ git, api: o.api, root, repo, branch, base, remoteEnv });
   await mustGit(git, ['checkout', '-B', branch, `origin/${base}`], root);
 
-  const generatedAt = o.generatedAt || (await mustGit(git, ['log', '-1', '--format=%cI'], root));
-  const { markdown, anchors } = buildRegister(root, generatedAt);
-
   assertNoSymlink(root, 'documents');
   assertNoSymlink(root, 'documents', 'register.md');
   assertNoSymlink(root, 'anchors.yaml');
+
+  // A commit that changes nothing in the register (a receive with no processing using it)
+  // must not open a pull request whose only change is generated_at.
+  const previous = previousGeneratedAt(root);
+  if (previous && isUpToDate(root, previous)) {
+    core.notice(`The register and anchors.yaml are already up to date with origin/${base}: nothing to commit.`);
+    return;
+  }
+
+  const generatedAt = o.generatedAt || (await mustGit(git, ['log', '-1', '--format=%cI'], root));
+  const { markdown, anchors } = buildRegister(root, generatedAt);
+
   mkdirSync(join(root, 'documents'), { recursive: true });
   writeNoFollow(join(root, 'documents', 'register.md'), markdown);
   writeNoFollow(join(root, 'anchors.yaml'), anchorsYaml(anchors, generatedAt));

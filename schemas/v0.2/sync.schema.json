@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/sync.schema.json",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/sync.schema.json",
   "title": "Sync record",
   "description": "Written by the Action each time a repo sends its manifest. File: services/<repo>/sync.yaml.",
   "type": "object",

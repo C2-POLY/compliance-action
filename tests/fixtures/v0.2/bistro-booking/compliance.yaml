@@ -14,6 +14,7 @@ organisation:
   representative:
     required: unknown  # the group is established in France; to confirm before the dossier is validated
   privacy_contact: privacy@bistro-booking.example
+  language: en
 
 repos:
   - name: bistro-api

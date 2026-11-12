@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/compliance.schema.json",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/compliance.schema.json",
   "title": "Compliance repo index",
   "description": "The organisation's identity, and the repos and external tools that make up the information system. File: compliance.yaml at the root of the compliance repo.",
   "type": "object",
@@ -56,7 +56,8 @@
           "if": { "properties": { "required": { "const": true } } },
           "then": { "required": ["name", "contact"] }
         },
-        "privacy_contact": { "type": "string", "minLength": 1, "description": "Where persons exercise their rights." }
+        "privacy_contact": { "type": "string", "minLength": 1, "description": "Where persons exercise their rights." },
+        "language": { "enum": ["en", "fr"], "description": "The one language of the compliance repo: every text that reaches the dossier is written in it. Ids, enum values and code references stay in English. Added in v0.2.1." }
       }
     },
     "repos": {

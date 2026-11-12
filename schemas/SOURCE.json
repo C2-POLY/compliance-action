@@ -4,7 +4,7 @@
     "0.2"
   ],
   "source": "C2-POLY/compliance-spec",
-  "commit": "df6514dad96757e34e300b54182d3e8ef94ada26",
+  "commit": "7b11d72ba6e2cec6bc912da0076ffc0ff2f24393",
   "schemas": {
     "0.1": [
       "anchors.schema.json",
@@ -14,6 +14,7 @@
       "sync.schema.json"
     ],
     "0.2": [
+      "actions.schema.json",
       "anchors.schema.json",
       "compliance.schema.json",
       "manifest.schema.json",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/anchors.schema.json",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/anchors.schema.json",
   "title": "Anchors",
   "description": "The commit of each repo the documents were generated from. Written by the register generator. File: anchors.yaml at the root of the compliance repo.",
   "type": "object",

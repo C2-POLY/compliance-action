@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/manifest.schema.json",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/manifest.schema.json",
   "title": "Compliance manifest",
   "description": "What one repo (or one declared external tool) does with personal data. File: .compliance/manifest.yaml.",
   "type": "object",

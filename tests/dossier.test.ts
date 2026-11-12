@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { parse } from 'yaml';
 import { actionsSummary, buildDossier, type Language } from '../src/dossier.js';
-import { anchorsYaml, buildRegister, runRegister, type RegisterOptions } from '../src/register.js';
+import { anchorsYaml, buildRegister, dossierLanguage, runRegister, type RegisterOptions } from '../src/register.js';
 import { validateDocument } from '../src/schema.js';
 import type { EventContext } from '../src/types.js';
 import { EXAMPLE, EXAMPLE_V02, complianceRepo, git, mockApi, tmp } from './helpers.js';
@@ -526,5 +526,24 @@ describe('refusals that keep the dossier from looking complete', () => {
     const file = join(dir, 'services/bistro-api/manifest.yaml');
     writeFileSync(file, readFileSync(file, 'utf8').replace('spec_version: "0.1"', 'spec_version: "0.2"'));
     expect(() => buildRegister(dir, GENERATED_AT)).toThrow(/is spec_version "0.2" but compliance.yaml is "0.1"/);
+  });
+});
+
+describe('v0.2.1 additions', () => {
+  it('validates organisation.language, a processing review and actions.yaml, and the dossier does not change', () => {
+    const { markdown } = buildDossier(EXAMPLE_V02, GENERATED_AT, 'en');
+    expect(markdown).toBe(readFileSync(join(EXAMPLE_V02, 'documents/register.md'), 'utf8'));
+  });
+
+  it('takes the language from the input, else from compliance.yaml, else en', () => {
+    const dir = copy(false);
+    const file = join(dir, 'compliance.yaml');
+    expect(dossierLanguage(dir)).toBe('en');
+    expect(dossierLanguage(dir, 'fr')).toBe('fr');
+    writeFileSync(file, readFileSync(file, 'utf8').replace(/language: en/, 'language: fr'));
+    expect(dossierLanguage(dir)).toBe('fr');
+    expect(dossierLanguage(dir, 'en')).toBe('en');
+    writeFileSync(file, readFileSync(file, 'utf8').replace(/\n  language: fr/, ''));
+    expect(dossierLanguage(dir)).toBe('en');
   });
 });

@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { validateDocument } from '@c2-poly/compliance-core';
 import { parse } from 'yaml';
 import { BOT_EMAIL, runReceive, type ReceiveOptions } from '../src/receive.js';
-import { validateDocument } from '../src/schema.js';
 import type { EventContext } from '../src/types.js';
 import { EXAMPLE, EXAMPLE_V02, complianceRepo, git, mockApi, tmp, write } from './helpers.js';
 import { runGit, type GitRunner } from '../src/git.js';

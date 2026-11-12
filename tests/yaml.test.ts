@@ -4,8 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCheck } from '../src/check.js';
 import { runReceive } from '../src/receive.js';
 import { runSend } from '../src/send.js';
-import { validateText } from '../src/schema.js';
-import { parseStrict } from '../src/yaml.js';
 import { FIXTURES, complianceRepo, git, initRepo, mockApi, tmp, write } from './helpers.js';
 
 vi.mock('@actions/core');
@@ -26,18 +24,8 @@ const bad: Record<string, string> = {
   'a duplicate key': 'a: 1\na: 2\n',
 };
 
+// The parser itself is tested in @c2-poly/compliance-core: these tests hold each mode to it.
 describe('strict YAML', () => {
-  for (const [name, text] of Object.entries(bad)) {
-    it(`rejects ${name}`, () => {
-      expect(() => parseStrict(text)).toThrow();
-      expect(validateText('manifest', text).errors[0]).toMatchObject({ keyword: 'yaml' });
-    });
-  }
-
-  it('accepts plain YAML 1.2 (and keeps "<<" a plain key)', () => {
-    expect(parseStrict('a: 1\n"<<": x\nb: [yes, no]\n')).toEqual({ a: 1, '<<': 'x', b: ['yes', 'no'] });
-  });
-
   it('check rejects each of them', () => {
     for (const text of Object.values(bad)) {
       const dir = tmp();

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import * as core from '@actions/core';
+import { validateText, versionOf } from '@c2-poly/compliance-core';
 import { ActionError, SPEC_URL } from './errors.js';
-import { validateText, versionOf } from './schema.js';
 
 /** Reads and validates the manifest. Annotates every error; throws ActionError if the manifest is missing or invalid. */
 export function loadAndValidateManifest(path: string): string {

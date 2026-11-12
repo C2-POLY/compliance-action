@@ -1,8 +1,7 @@
 import * as core from '@actions/core';
+import { parseStrict, validateDocument } from '@c2-poly/compliance-core';
 import type { Api } from './api.js';
 import { runGit, type GitRunner } from './git.js';
-import { validateDocument } from './schema.js';
-import { parseStrict } from './yaml.js';
 import type { LagResult, RepoRef } from './types.js';
 
 export interface LagOptions {

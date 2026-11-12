@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { createApi } from './api.js';
 import { runCheck } from './check.js';
-import { ActionError } from './errors.js';
+import { ActionError, ComplianceError } from './errors.js';
 import { runReceive } from './receive.js';
 import { runRegister } from './register.js';
 import { runSend } from './send.js';
@@ -81,5 +81,5 @@ export async function run(): Promise<void> {
 }
 
 run().catch((err: unknown) => {
-  core.setFailed(err instanceof ActionError ? err.message : err instanceof Error ? err.message : String(err));
+  core.setFailed(err instanceof ActionError || err instanceof ComplianceError ? err.message : err instanceof Error ? err.message : String(err));
 });

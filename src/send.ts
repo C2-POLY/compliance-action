@@ -1,10 +1,10 @@
 import * as core from '@actions/core';
+import { parseStrict } from '@c2-poly/compliance-core';
 import { explainGitHubError, type Api } from './api.js';
 import { loadAndValidateManifest } from './check.js';
 import { ActionError } from './errors.js';
 import { runGit, type GitRunner } from './git.js';
 import { computeLag } from './lag.js';
-import { parseStrict } from './yaml.js';
 import { lagCount, lagStatus, type EventContext, type Lag, type LagResult, type RepoRef } from './types.js';
 
 export const EVENT_TYPE = 'compliance-manifest';

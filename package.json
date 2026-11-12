@@ -12,14 +12,12 @@
     "build": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "all": "npm run typecheck && npm test && npm run build",
-    "sync-schemas": "node scripts/sync-schemas.mjs"
+    "all": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@actions/core": "^3.0.1",
     "@actions/github": "^9.1.1",
-    "ajv": "^8.20.0",
-    "ajv-formats": "^3.0.1",
+    "@c2-poly/compliance-core": "github:C2-POLY/compliance-core#542def8d6180f6fc798aab171e59cca95add0ac8",
     "yaml": "^2.9.1"
   },
   "devDependencies": {

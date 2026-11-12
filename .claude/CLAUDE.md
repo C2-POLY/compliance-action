@@ -1,6 +1,6 @@
 # compliance-action
 
-The GitHub Action only. `action.yml` stays at the root so that it is used as `uses: C2-POLY/compliance-action@v1`. The format it reads is defined in C2-POLY/compliance-spec.
+The GitHub Action only. `action.yml` stays at the root so that it is used as `uses: C2-POLY/compliance-action@v1`. The format it reads is defined in C2-POLY/compliance-spec. The engine that reads it and builds the register (parser, schemas, templates, register, dossier) lives in C2-POLY/compliance-core, a git dependency pinned to a commit sha: change the engine there, not here.
 
 ## House rules
 

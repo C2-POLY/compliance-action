@@ -2,7 +2,7 @@
 
 A GitHub Action that keeps a repo's compliance manifest in step with its code. It checks `.compliance/manifest.yaml` on pull requests, and on every merge sends the manifest and the commit SHA to the organisation's compliance repo, together with how far the documents lag behind the code.
 
-The format of the manifest and of the compliance repo is defined in [compliance-spec](https://github.com/C2-POLY/compliance-spec) (v0.1 and v0.2). The schemas used here are copied from it into `schemas/`, see [Development](#development). Each file is validated against the schema of its own `spec_version`, so a v0.2 compliance repo can hold the v0.1 manifests of the repos that have not upgraded yet.
+The format of the manifest and of the compliance repo is defined in [compliance-spec](https://github.com/C2-POLY/compliance-spec) (v0.1 and v0.2). The schemas, the templates and the engine that builds the register live in [compliance-core](https://github.com/C2-POLY/compliance-core), see [Development](#development). Each file is validated against the schema of its own `spec_version`, so a v0.2 compliance repo can hold the v0.1 manifests of the repos that have not upgraded yet.
 
 ## How it fits together
 
@@ -179,7 +179,7 @@ jobs:
           language: fr # optional: en or fr; by default organisation.language of compliance.yaml, else en
 ```
 
-- **Prepared for review, not certified.** The pull request says that the document is prepared for review by the controller and its data protection officer and does not certify compliance. Rows with no source say `To complete` (`À compléter` in French) and need a person. Gaps are expected while people work, so the review starts with what is missing: the v0.1 register opens with an **Open items** section that lists them per processing activity; the v0.2 dossier opens with the **Actions** that close them. The front matter carries their count (`open_items`, and `actions` in v0.2), and the pull request body repeats the list as code spans (the open items in v0.1, each action with its role and count in v0.2; the body is in English whatever the language of the dossier). Open items are found from the source fields while the rows are built, never by reading the rendered text. The rules that fill each row, and the provenance of each value, are in [`templates/register/README.md`](https://github.com/C2-POLY/compliance-spec/blob/main/templates/register/README.md) of the spec; the templates are vendored in `templates/register/` (see `schemas/SOURCE.json` for the spec commit).
+- **Prepared for review, not certified.** The pull request says that the document is prepared for review by the controller and its data protection officer and does not certify compliance. Rows with no source say `To complete` (`À compléter` in French) and need a person. Gaps are expected while people work, so the review starts with what is missing: the v0.1 register opens with an **Open items** section that lists them per processing activity; the v0.2 dossier opens with the **Actions** that close them. The front matter carries their count (`open_items`, and `actions` in v0.2), and the pull request body repeats the list as code spans (the open items in v0.1, each action with its role and count in v0.2; the body is in English whatever the language of the dossier). Open items are found from the source fields while the rows are built, never by reading the rendered text. The rules that fill each row, and the provenance of each value, are in [`templates/register/README.md`](https://github.com/C2-POLY/compliance-spec/blob/main/templates/register/README.md) of the spec; the templates are copied into [compliance-core](https://github.com/C2-POLY/compliance-core), which records the spec commit in its `schemas/SOURCE.json`.
 - **Merging records the anchors.** `anchors.yaml` holds the `sha` of the `sync.yaml` of each repo the document reads: in v0.1, each repo a processing refers to; in v0.2, each repo of `compliance.yaml` that has a `services/<repo>/` folder. Its `spec_version` is the one of the document. Once the pull request is merged, the next sync of a service counts its lag from that commit, so the lag of each service resets to 0.
 - **Deterministic.** The same compliance repo and the same `generated-at` give the same bytes. When `generated-at` is not set, the action uses the commit time of the base branch of the compliance repo (`git log -1 --format=%cI`), never the clock, so a rerun on the same commit changes nothing. If nothing changed, the run logs it and stops: no branch, no pull request. A change of `language` changes the bytes, so it opens a pull request.
 - **Fails closed.** A processing that points to a repo with no `manifest.yaml` or `sync.yaml`, to a tool missing from `compliance.yaml`, or to an unknown `data` or `recipients` id fails the run and writes nothing: a register that silently omits a service would look complete. In v0.2, so do a repo with a `services/<repo>/` folder but no `manifest.yaml` or `sync.yaml`, a declared tool with no manifest file, and a notice of `information.notices` that does not resolve. The v0.1 register refuses a v0.2 processing file: upgrade `compliance.yaml` first.
@@ -269,13 +269,16 @@ npm run all        # typecheck, test, build
 
 `dist/` is committed (the runner executes `dist/index.js`): rebuild it with `npm run build` and commit the result; CI fails if it is stale.
 
-The schemas in `schemas/v0.1/` and `schemas/v0.2/` and the templates in `templates/register/` (`register.md.tmpl` for v0.1, `register.en.md.tmpl` and `register.fr.md.tmpl` for v0.2) are vendored. To update them from a checkout of compliance-spec:
+The engine lives in [compliance-core](https://github.com/C2-POLY/compliance-core), shared with the web platform: the strict YAML parser, the schemas and their cross-reference checks, the templates, the v0.1 register and the v0.2 dossier, and the loader that refuses symbolic links. This repo keeps what only the Action does: the modes, git, the bot branch and its pull request, the lag and the GitHub API. esbuild bundles the engine into `dist/index.js`, so the runner needs no `node_modules`.
+
+The engine is a git dependency pinned to a full commit sha in `package.json`. To update it, take the sha of the compliance-core commit to use (spec updates are made there, with its `npm run sync-spec`), then:
 
 ```
-node scripts/sync-schemas.mjs ../compliance-spec
+npm install github:C2-POLY/compliance-core#<full-sha>
+npm run all
 ```
 
-`schemas/SOURCE.json` records the spec commit they come from. The cross-reference checks of the spec's `validate.mjs` are ported in `src/schema.ts`. The v0.1 register is built in `src/register.ts`, the v0.2 dossier in `src/dossier.ts`; their golden outputs for the Bistro Booking example are `tests/fixtures/bistro-booking/documents/register.md` (v0.1) and `tests/fixtures/v0.2/bistro-booking/documents/register.md` and `register.fr.md` (v0.2), which the spec copies byte for byte.
+and commit `package.json`, `package-lock.json` and the rebuilt `dist/` together. The golden outputs for the Bistro Booking example, `tests/fixtures/bistro-booking/documents/register.md` (v0.1) and `tests/fixtures/v0.2/bistro-booking/documents/register.md` and `register.fr.md` (v0.2), hold the register mode to the engine byte for byte; the engine's own tests are in compliance-core.
 
 ## Licence
 

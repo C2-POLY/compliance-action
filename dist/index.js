@@ -40439,7 +40439,7 @@ var sync_schema_default = {
 // schemas/v0.2/anchors.schema.json
 var anchors_schema_default2 = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/anchors.schema.json",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/anchors.schema.json",
   title: "Anchors",
   description: "The commit of each repo the documents were generated from. Written by the register generator. File: anchors.yaml at the root of the compliance repo.",
   type: "object",
@@ -40464,7 +40464,7 @@ var anchors_schema_default2 = {
 // schemas/v0.2/compliance.schema.json
 var compliance_schema_default2 = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/compliance.schema.json",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/compliance.schema.json",
   title: "Compliance repo index",
   description: "The organisation's identity, and the repos and external tools that make up the information system. File: compliance.yaml at the root of the compliance repo.",
   type: "object",
@@ -40520,7 +40520,8 @@ var compliance_schema_default2 = {
           if: { properties: { required: { const: true } } },
           then: { required: ["name", "contact"] }
         },
-        privacy_contact: { type: "string", minLength: 1, description: "Where persons exercise their rights." }
+        privacy_contact: { type: "string", minLength: 1, description: "Where persons exercise their rights." },
+        language: { enum: ["en", "fr"], description: "The one language of the compliance repo: every text that reaches the dossier is written in it. Ids, enum values and code references stay in English. Added in v0.2.1." }
       }
     },
     repos: {
@@ -40560,7 +40561,7 @@ var compliance_schema_default2 = {
 // schemas/v0.2/manifest.schema.json
 var manifest_schema_default2 = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/manifest.schema.json",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/manifest.schema.json",
   title: "Compliance manifest",
   description: "What one repo (or one declared external tool) does with personal data. File: .compliance/manifest.yaml.",
   type: "object",
@@ -40825,7 +40826,7 @@ var manifest_schema_default2 = {
 // schemas/v0.2/processing.schema.json
 var processing_schema_default2 = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/processing.schema.json",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/processing.schema.json",
   title: "Processing activity",
   description: "One processing activity of the organisation (GDPR Art. 30), with the checks a DPO reviews. File: processings/<id>/processing.yaml in the compliance repo.",
   type: "object",
@@ -40978,6 +40979,18 @@ var processing_schema_default2 = {
         source: { $ref: "#/$defs/source" }
       }
     },
+    review: {
+      type: "object",
+      additionalProperties: false,
+      required: ["status"],
+      description: "Reserved for the DPO's approval of this processing, distinct from the technical merge. The v0.2 dossier does not read it yet. Added in v0.2.1.",
+      properties: {
+        status: { enum: ["draft", "ready", "validated"] },
+        by: { $ref: "#/$defs/text", description: "Who reviewed: a person, a role or a team." },
+        date: { type: "string", format: "date" },
+        pr: { type: "string", pattern: "^(#[1-9][0-9]*|https?://\\S+)$", description: "The pull request of the review: its URL, or #<number> in the compliance repo." }
+      }
+    },
     source: { $ref: "#/$defs/source" }
   },
   $defs: {
@@ -41003,7 +41016,7 @@ var processing_schema_default2 = {
 // schemas/v0.2/sync.schema.json
 var sync_schema_default2 = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/sync.schema.json",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/sync.schema.json",
   title: "Sync record",
   description: "Written by the Action each time a repo sends its manifest. File: services/<repo>/sync.yaml.",
   type: "object",
@@ -41068,7 +41081,7 @@ var SOURCE_default = {
     "0.2"
   ],
   source: "C2-POLY/compliance-spec",
-  commit: "df6514dad96757e34e300b54182d3e8ef94ada26",
+  commit: "7b11d72ba6e2cec6bc912da0076ffc0ff2f24393",
   schemas: {
     "0.1": [
       "anchors.schema.json",
@@ -41078,6 +41091,7 @@ var SOURCE_default = {
       "sync.schema.json"
     ],
     "0.2": [
+      "actions.schema.json",
       "anchors.schema.json",
       "compliance.schema.json",
       "manifest.schema.json",
@@ -42460,20 +42474,25 @@ function isUpToDate(root, previous, language) {
   const same = generate(root, previous, language);
   return readFileSync5(registerPath, "utf8") === same.markdown && readFileSync5(join4(root, "anchors.yaml"), "utf8") === anchorsYaml(same.anchors, previous, same.specVersion);
 }
+function dossierLanguage(root, input) {
+  if (input) return input;
+  const declared = readDoc(root, "compliance.yaml", "compliance").organisation?.language;
+  return LANGUAGES.includes(declared) ? declared : "en";
+}
 async function runRegister(o) {
   const git = o.git ?? runGit;
   const root = resolve3(o.compliancePath);
   const branch = REGISTER_BRANCH;
   const base = o.baseBranch;
   const repo = o.ctx.repo;
-  const language = o.language || "en";
-  if (!LANGUAGES.includes(language)) throw new ActionError(`Unknown language "${o.language}". Use ${LANGUAGES.join(" or ")}.`);
+  if (o.language && !LANGUAGES.includes(o.language)) throw new ActionError(`Unknown language "${o.language}". Use ${LANGUAGES.join(" or ")}.`);
   const remoteEnv = remoteAuthEnv(o.token);
   const { existing, remoteSha } = await guardBotBranch({ git, api: o.api, root, repo, branch, base, remoteEnv });
   await mustGit(git, ["checkout", "-B", branch, `origin/${base}`], root);
   assertNoSymlink(root, "documents");
   assertNoSymlink(root, "documents", "register.md");
   assertNoSymlink(root, "anchors.yaml");
+  const language = dossierLanguage(root, o.language);
   const previous = previousGeneratedAt(root);
   if (previous && isUpToDate(root, previous, language)) {
     notice(`The register and anchors.yaml are already up to date with origin/${base}: nothing to commit.`);
@@ -42564,7 +42583,7 @@ async function run() {
         baseBranch: baseBranch(ctx),
         token,
         generatedAt: getInput("generated-at") || void 0,
-        language: getInput("language") || "en",
+        language: getInput("language") || void 0,
         ctx,
         api: createApi(token)
       });

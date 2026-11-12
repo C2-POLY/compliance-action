@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/actions.schema.json",
+  "title": "Action owners",
+  "description": "Who answers for which role and scope, and who closes which action of the dossier. Optional file: actions.yaml at the root of the compliance repo. The v0.2 dossier does not read it yet. Added in v0.2.1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "contacts"],
+  "properties": {
+    "spec_version": { "const": "0.2" },
+    "contacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "role", "name", "contact"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id", "description": "Referenced by assignments[].contact; unique in contacts." },
+          "role": { "enum": ["organisation", "dpo", "developer"], "description": "The role of the actions table of the dossier this contact answers for." },
+          "name": { "$ref": "#/$defs/text", "description": "A person, a role or a team." },
+          "contact": { "$ref": "#/$defs/text" },
+          "scope": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "Repo names of compliance.yaml, or organisation. Absent: everything.",
+            "items": { "$ref": "#/$defs/scope" }
+          }
+        }
+      }
+    },
+    "assignments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action", "contact"],
+        "properties": {
+          "action": { "$ref": "#/$defs/action" },
+          "contact": { "$ref": "#/$defs/id", "description": "A contacts id of this file." },
+          "scope": { "$ref": "#/$defs/scope", "description": "A processing id, a repo name, or organisation. Absent: every open item of the action." },
+          "due": { "type": "string", "format": "date" },
+          "note": { "$ref": "#/$defs/text" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "scope": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+$" },
+    "text": { "type": "string", "minLength": 1 },
+    "action": {
+      "description": "An action id of the v0.2 dossier (templates/register/README.md, Actions).",
+      "enum": [
+        "organisation-identity", "organisation-dpo", "organisation-representative", "joint-controllers",
+        "personal-data", "transfer-safeguards", "processor-contracts", "retention", "security-measures",
+        "legal-basis-detail", "dpia", "information", "sensitive-data", "ai-classification", "ai-obligations",
+        "controller-rationale"
+      ]
+    }
+  }
+}

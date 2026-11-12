@@ -1,0 +1,25 @@
+spec_version: "0.2"
+
+contacts:
+  - id: data-protection-office
+    role: dpo
+    name: Data protection office
+    contact: dpo@bistro-booking.example
+    scope: [organisation]
+  - id: platform-team
+    role: developer
+    name: platform team
+    contact: platform@bistro-booking.example
+    scope: [bistro-api, bistro-web]
+
+assignments:
+  - action: legal-basis-detail
+    contact: data-protection-office
+    scope: marketing-emails
+    due: 2026-12-15
+    note: Document how the newsletter consent is collected and withdrawn.
+  - action: ai-obligations
+    contact: platform-team
+    scope: bistro-api
+    due: 2027-01-31
+    note: Train the staff who use the no-show prediction, and record it.

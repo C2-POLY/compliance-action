@@ -69,7 +69,7 @@ export async function run(): Promise<void> {
         baseBranch: baseBranch(ctx),
         token,
         generatedAt: core.getInput('generated-at') || undefined,
-        language: core.getInput('language') || 'en',
+        language: core.getInput('language') || undefined,
         ctx,
         api: createApi(token),
       });

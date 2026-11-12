@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/processing.schema.json",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.1/schema/v0.2/processing.schema.json",
   "title": "Processing activity",
   "description": "One processing activity of the organisation (GDPR Art. 30), with the checks a DPO reviews. File: processings/<id>/processing.yaml in the compliance repo.",
   "type": "object",
@@ -151,6 +151,18 @@
         "duration": { "type": "string", "pattern": "^(none|session|unknown|P(?!$)(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?=\\d)(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?)$" },
         "trigger": { "type": "string", "minLength": 1 },
         "source": { "$ref": "#/$defs/source" }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "description": "Reserved for the DPO's approval of this processing, distinct from the technical merge. The v0.2 dossier does not read it yet. Added in v0.2.1.",
+      "properties": {
+        "status": { "enum": ["draft", "ready", "validated"] },
+        "by": { "$ref": "#/$defs/text", "description": "Who reviewed: a person, a role or a team." },
+        "date": { "type": "string", "format": "date" },
+        "pr": { "type": "string", "pattern": "^(#[1-9][0-9]*|https?://\\S+)$", "description": "The pull request of the review: its URL, or #<number> in the compliance repo." }
       }
     },
     "source": { "$ref": "#/$defs/source" }

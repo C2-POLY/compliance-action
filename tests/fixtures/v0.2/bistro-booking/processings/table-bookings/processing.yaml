@@ -34,4 +34,9 @@ retention:
   duration: P3Y
   trigger: after the last booking of the guest
   source: {kind: declared, ref: "records of processing policy"}
+review:
+  status: validated
+  by: Data protection office
+  date: 2026-11-10
+  pr: https://github.com/bistro-org/bistro-compliance/pull/4
 source: {kind: declared, ref: "operations team"}

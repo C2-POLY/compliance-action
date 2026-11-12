@@ -536,11 +536,18 @@ export interface RegisterOptions {
   token: string;
   /** RFC 3339. Default: the commit time of HEAD of the compliance repo, so that reruns give the same bytes. */
   generatedAt?: string;
-  /** Language of the v0.2 dossier, `en` (default) or `fr`. A v0.1 register is always in English. */
+  /** Language of the v0.2 dossier, `en` or `fr`. When absent: organisation.language of compliance.yaml, else `en`. A v0.1 register is always in English. */
   language?: string;
   ctx: EventContext;
   api: Api;
   git?: GitRunner;
+}
+
+/** The input when given, else organisation.language of compliance.yaml (v0.2.1), else `en`. */
+export function dossierLanguage(root: string, input?: string): Language {
+  if (input) return input as Language;
+  const declared = (readDoc(root, 'compliance.yaml', 'compliance').organisation as Doc | undefined)?.language;
+  return LANGUAGES.includes(declared as Language) ? (declared as Language) : 'en';
 }
 
 export async function runRegister(o: RegisterOptions): Promise<void> {
@@ -549,8 +556,7 @@ export async function runRegister(o: RegisterOptions): Promise<void> {
   const branch = REGISTER_BRANCH;
   const base = o.baseBranch;
   const repo = o.ctx.repo;
-  const language = (o.language || 'en') as Language;
-  if (!LANGUAGES.includes(language)) throw new ActionError(`Unknown language "${o.language}". Use ${LANGUAGES.join(' or ')}.`);
+  if (o.language && !LANGUAGES.includes(o.language as Language)) throw new ActionError(`Unknown language "${o.language}". Use ${LANGUAGES.join(' or ')}.`);
 
   const remoteEnv = remoteAuthEnv(o.token);
   const { existing, remoteSha } = await guardBotBranch({ git, api: o.api, root, repo, branch, base, remoteEnv });
@@ -559,6 +565,7 @@ export async function runRegister(o: RegisterOptions): Promise<void> {
   assertNoSymlink(root, 'documents');
   assertNoSymlink(root, 'documents', 'register.md');
   assertNoSymlink(root, 'anchors.yaml');
+  const language = dossierLanguage(root, o.language);
 
   // A commit that changes nothing in the register (a receive with no processing using it)
   // must not open a pull request whose only change is generated_at.

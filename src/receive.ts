@@ -1,13 +1,13 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import * as core from '@actions/core';
+import { validateDocument, validateText, versionOf, type SpecVersion } from '@c2-poly/compliance-core';
 import { stringify } from 'yaml';
 import type { Api } from './api.js';
 import { BOT_EMAIL, BOT_NAME, assertNoSymlink, commitPushAndOpenPr, guardBotBranch, remoteAuthEnv, writeNoFollow } from './bot.js';
 import { ActionError } from './errors.js';
 import { mustGit, runGit, type GitRunner } from './git.js';
 import { EVENT_TYPE, parseRepoRef } from './send.js';
-import { validateDocument, validateText, versionOf, type SpecVersion } from './schema.js';
 import type { EventContext, Lag } from './types.js';
 import { lagCount, lagStatus } from './types.js';
 

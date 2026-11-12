@@ -1,0 +1,22 @@
+# expect: /service/components/1/id uniqueId
+spec_version: "0.2"
+service:
+  name: Bistro Booking Web
+  description: Booking website.
+  controller: organisation
+  components:
+    - {id: site, kind: frontend}
+    - {id: site, kind: progressive-web-app, controller: user-of-the-app}
+  source: {kind: declared, ref: README.md}
+personal_data:
+  - id: guest-contact
+    subjects: [restaurant guests]
+    fields:
+      - {name: guest email, category: contact}
+    purpose: confirm bookings
+    source: {kind: code, ref: "src/bookings/guest.ts"}
+storage: []
+processors: []
+outbound_flows: []
+automated_decisions: []
+ai_features: []

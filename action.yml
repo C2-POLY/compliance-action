@@ -1,12 +1,12 @@
 name: Compliance manifest
-description: Check a repo's compliance manifest, send it to the organisation's compliance repo, receive it there, or generate the records of processing.
+description: Check a repo's compliance manifest, send it to the organisation's compliance repo, receive it there, or generate the records of processing or the compliance dossier.
 author: C2-POLY
 branding:
   icon: shield
   color: blue
 inputs:
   mode:
-    description: "check (validate the manifest), send (push to the base branch: validate and send it to the compliance repo), receive (in the compliance repo: store a received manifest and open a pull request) or register (in the compliance repo: generate the records of processing and anchors.yaml and open a pull request)."
+    description: "check (validate the manifest), send (push to the base branch: validate and send it to the compliance repo), receive (in the compliance repo: store a received manifest and open a pull request) or register (in the compliance repo: generate the records of processing, or the compliance dossier of a v0.2 compliance repo, and anchors.yaml, and open a pull request)."
     required: true
   manifest:
     description: Path of the manifest in the repo.
@@ -32,6 +32,10 @@ inputs:
   generated-at:
     description: "Mode register: RFC 3339 date-time written in the register and in anchors.yaml. Defaults to the commit time of the compliance repo's base branch, never the wall clock, so that a rerun gives the same bytes."
     required: false
+  language:
+    description: "Mode register: language of the compliance dossier of a v0.2 compliance repo, en or fr. Written to documents/register.md either way. A v0.1 compliance repo keeps its register in English."
+    required: false
+    default: en
 outputs:
   lag-count:
     description: "Number of commits since the last generated documents that touch the manifest's linked_files (mode send). 0 when never documented or unknown."

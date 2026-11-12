@@ -1,0 +1,37 @@
+spec_version: "0.2"
+
+organisation:
+  name: Bistro Booking Group
+  controller:
+    legal_name: Bistro Booking Group SAS
+    address: 12 rue des Tables, 75011 Paris, France
+    registration: "RCS Paris 900 000 000"
+    contact: privacy@bistro-booking.example
+  dpo:
+    designated: true
+    name: Data protection office
+    contact: dpo@bistro-booking.example
+  representative:
+    required: unknown  # the group is established in France; to confirm before the dossier is validated
+  privacy_contact: privacy@bistro-booking.example
+
+repos:
+  - name: bistro-api
+    url: https://github.com/bistro-org/bistro-api
+    owner: platform team
+    expected_to_send: true
+    components: [api, worker]
+  - name: bistro-web
+    url: https://github.com/bistro-org/bistro-web
+    owner: web team
+    expected_to_send: true
+    components: [site, offline-app]
+  - name: bistro-analytics
+    url: https://github.com/bistro-org/bistro-analytics
+    owner: data team
+    expected_to_send: false  # internal dashboards, no personal data; revisit if that changes
+
+declared_tools:
+  - id: crm
+    name: ClientDesk CRM
+    path: declared/crm/manifest.yaml

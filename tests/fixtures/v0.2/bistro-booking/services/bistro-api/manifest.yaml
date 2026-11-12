@@ -1,0 +1,224 @@
+spec_version: "0.2"
+
+service:
+  name: Bistro Booking API
+  repo: bistro-org/bistro-api
+  description: Booking API and background worker of Bistro Booking, a table booking app for restaurants.
+  controller: organisation
+  components:
+    - {id: api, kind: web-api}
+    - {id: worker, kind: background-worker}
+  source: {kind: declared, ref: "README.md"}
+
+personal_data:
+  - id: guest-contact
+    component: api
+    subjects: [restaurant guests]
+    fields:
+      - {name: guest name, category: identity}
+      - {name: guest email, category: contact}
+      - {name: guest phone number, category: contact}
+    purpose: confirm, change and remind table bookings
+    legal_basis: contract
+    source: {kind: code, ref: "src/bookings/guest.ts"}
+    linked_files: ["src/bookings/**"]
+
+  - id: booking-details
+    component: api
+    subjects: [restaurant guests]
+    fields:
+      - {name: party size, category: usage}
+      - {name: booking date and time, category: usage}
+      - {name: dietary notes (free text), category: special}
+    purpose: prepare the table and the kitchen
+    legal_basis: contract
+    source: {kind: code, ref: "src/bookings/booking.ts"}
+    linked_files: ["src/bookings/**"]
+
+  - id: payment-reference
+    component: api
+    subjects: [restaurant guests]
+    fields:
+      - {name: payment provider customer id, category: financial}
+      - {name: card brand and last four digits, category: financial}
+    purpose: hold and charge the booking deposit
+    legal_basis: contract
+    source: {kind: code, ref: "src/payments/deposit.ts"}
+    linked_files: ["src/payments/**"]
+
+  - id: no-show-history
+    component: worker
+    subjects: [restaurant guests]
+    fields:
+      - {name: number of past no-shows, category: usage}
+      - {name: no-show risk score, category: usage}
+    purpose: ask a deposit for bookings that are likely not to be honoured
+    legal_basis: legitimate-interests
+    source: {kind: spec, ref: "https://github.com/bistro-org/bistro-api/issues/42"}
+    linked_files: ["src/scoring/**"]
+
+  - id: staff-accounts
+    component: api
+    subjects: [restaurant staff]
+    fields:
+      - {name: staff email, category: contact}
+      - {name: password hash, category: credential}
+    purpose: sign staff in to the back office
+    legal_basis: legitimate-interests
+    source: {kind: code, ref: "src/auth/staff.ts"}
+    linked_files: ["src/auth/**"]
+
+  - id: request-metadata
+    component: api
+    subjects: [restaurant guests]
+    fields:
+      - {name: IP address of the booking request, category: connection}
+      - {name: browser user agent, category: connection}
+    purpose: protect the booking API against abuse and fake bookings
+    legal_basis: legitimate-interests
+    source: {kind: code, ref: "src/middleware/rate-limit.ts"}
+    linked_files: ["src/middleware/**"]
+
+storage:
+  - id: main-db
+    kind: database
+    location: PostgreSQL, EU region (Frankfurt), managed by the hosting provider
+    data: [guest-contact, booking-details, payment-reference, no-show-history, staff-accounts]
+    retention: {duration: P3Y, trigger: after the last booking of the guest}
+    source: {kind: code, ref: "db/migrations/**"}
+    linked_files: ["db/migrations/**"]
+
+  - id: staff-sessions
+    kind: cache
+    location: Redis, EU region (Frankfurt)
+    data: [staff-accounts]
+    retention: {duration: PT12H, trigger: sign-out or expiry of the session}
+    source: {kind: code, ref: "src/auth/session.ts"}
+
+  - id: app-logs
+    kind: log
+    location: log service of the hosting provider, EU region
+    data: [guest-contact, request-metadata]
+    retention: {duration: P30D, trigger: log rotation}
+    source: {kind: declared, ref: "docs/operations.md"}
+
+processors:
+  - id: textflow-sms
+    component: worker
+    name: TextFlow SMS
+    service: SMS booking reminders
+    country: NL
+    dpa: "yes"
+    dpa_ref: "TextFlow SMS data processing agreement, signed 2025-09-02"
+    transfer_outside_eu: false
+    data: [guest-contact]
+    source: {kind: code, ref: "src/notifications/sms.ts"}
+
+  - id: mailrelay
+    component: worker
+    name: MailRelay
+    service: transactional email (confirmations, reminders)
+    country: FR
+    dpa: "yes"
+    dpa_ref: "MailRelay standard data processing terms, version 2025"
+    transfer_outside_eu: false
+    data: [guest-contact, booking-details]
+    source: {kind: code, ref: "src/notifications/email.ts"}
+
+  - id: paygate
+    component: api
+    name: PayGate
+    service: card deposits
+    country: US
+    dpa: "yes"
+    dpa_ref: "PayGate data processing addendum, signed 2025-11-20"
+    transfer_outside_eu: true
+    safeguard: standard contractual clauses
+    data: [guest-contact, payment-reference]
+    source: {kind: code, ref: "src/payments/deposit.ts"}
+
+outbound_flows:
+  - id: send-sms
+    component: worker
+    to: {name: TextFlow SMS, country: NL}
+    data: [guest-contact]
+    purpose: send the booking reminder by SMS
+    account: organisation
+    source: {kind: code, ref: "src/notifications/sms.ts"}
+
+  - id: send-email
+    component: worker
+    to: {name: MailRelay, country: FR}
+    data: [guest-contact, booking-details]
+    purpose: send the booking confirmation and reminder by email
+    account: organisation
+    source: {kind: code, ref: "src/notifications/email.ts"}
+
+  - id: charge-deposit
+    component: api
+    to: {name: PayGate, country: US}
+    data: [guest-contact, payment-reference]
+    purpose: hold and charge the booking deposit
+    account: organisation
+    processor: paygate
+    source: {kind: code, ref: "src/payments/deposit.ts"}
+
+  - id: calendar-link
+    component: api
+    to: {name: the calendar application chosen by the guest, country: unknown}
+    data: [booking-details]
+    purpose: let the guest add the booking to their own calendar
+    account: user
+    safeguard: "The guest adds the booking to a calendar of their choice with their own account; the service only offers the link."
+    source: {kind: code, ref: "src/bookings/calendar.ts"}
+
+automated_decisions:
+  - id: deposit-for-risky-bookings
+    component: worker
+    description: A booking whose no-show risk score is above a threshold requires a deposit. A manager can waive the deposit.
+    legal_or_similar_effect: false
+    human_review: true
+    source: {kind: spec, ref: "https://github.com/bistro-org/bistro-api/issues/42"}
+    linked_files: ["src/scoring/**"]
+
+ai_features:
+  - id: no-show-prediction
+    component: worker
+    description: A statistical model predicts the no-show risk of a booking from the guest's booking history.
+    generates_content: false
+    interacts_with_persons: false
+    human_review: true
+    marking: Internal score, never shown to guests; the guest is told that a deposit may be asked.
+    role: provider
+    risk: {level: limited, reason: "The score only asks for a deposit that a manager can waive; it is not an Annex III use."}
+    obligations:
+      - {id: art4-ai-literacy, status: open}
+    data: [no-show-history]
+    source: {kind: spec, ref: "https://github.com/bistro-org/bistro-api/issues/42"}
+    linked_files: ["src/scoring/**"]
+
+  - id: booking-assistant
+    component: api
+    description: A chat assistant answers guests' questions about opening hours and menus.
+    generates_content: true
+    interacts_with_persons: true
+    human_review: false
+    marking: The chat window starts with "You are talking to an AI assistant".
+    role: to-assess
+    risk: {level: limited, reason: "A chat assistant that talks to guests: transparency obligations only."}
+    obligations:
+      - {id: art4-ai-literacy, status: done, ref: "AI training of the support team, 2026"}
+      - {id: art50-interaction, status: done, ref: "The chat window starts with \"You are talking to an AI assistant\"."}
+    source: {kind: code, ref: "src/assistant/chat.ts"}
+    linked_files: ["src/assistant/**"]
+
+linked_files:
+  - "src/bookings/**"
+  - "src/payments/**"
+  - "src/notifications/**"
+  - "src/scoring/**"
+  - "src/auth/**"
+  - "src/assistant/**"
+  - "src/middleware/**"
+  - "db/migrations/**"
+  - "package.json"

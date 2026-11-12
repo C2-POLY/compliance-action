@@ -1,0 +1,15 @@
+# expect: /service/privacy_by_design minItems
+spec_version: "0.2"
+service: {name: Bistro Booking API, description: Booking API., controller: organisation, privacy_by_design: [], source: {kind: declared, ref: README.md}}
+personal_data:
+  - id: guest-contact
+    subjects: [restaurant guests]
+    fields:
+      - {name: guest email, category: contact}
+    purpose: confirm bookings
+    source: {kind: code, ref: "src/bookings/guest.ts"}
+storage: []
+processors: []
+outbound_flows: []
+automated_decisions: []
+ai_features: []

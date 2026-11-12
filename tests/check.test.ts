@@ -23,8 +23,16 @@ describe('mode check', () => {
     expect(() => runCheck(join(FIXTURES, 'bistro-booking/services/bistro-web/manifest.yaml'))).not.toThrow();
   });
 
+  it('picks the schema from the file\'s own spec_version: the v0.2 example and a minimal v0.2 manifest pass', () => {
+    for (const path of ['v0.2/bistro-booking/services/bistro-api/manifest.yaml', 'v0.2/bistro-booking/services/bistro-web/manifest.yaml', 'manifests/valid-v0.2.yaml']) {
+      expect(() => runCheck(join(FIXTURES, path))).not.toThrow();
+    }
+    expect(core.error).not.toHaveBeenCalled();
+    expect(vi.mocked(core.info).mock.calls.flat().join('\n')).toContain('schema v0.2');
+  });
+
   const invalid = readdirSync(dir).filter((f) => f.startsWith('invalid-'));
-  it('has invalid fixtures', () => expect(invalid.length).toBeGreaterThanOrEqual(5));
+  it('has invalid fixtures', () => expect(invalid.length).toBeGreaterThanOrEqual(20));
 
   for (const file of invalid) {
     it(`fails on ${file} and annotates the field and the error`, () => {

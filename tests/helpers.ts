@@ -9,6 +9,8 @@ import type { Api } from '../src/api.js';
 
 export const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), 'fixtures');
 export const EXAMPLE = join(FIXTURES, 'bistro-booking');
+/** The v0.2 example of the spec (examples/bistro-booking), with its golden dossier in English and French. */
+export const EXAMPLE_V02 = join(FIXTURES, 'v0.2', 'bistro-booking');
 
 const GIT_ENV = {
   ...process.env,
@@ -48,13 +50,13 @@ export function initRepo(): string {
   return dir;
 }
 
-/** A compliance repo: a copy of the Bistro Booking example, pushed to a bare remote. */
-export function complianceRepo(): { dir: string; remote: string } {
+/** A compliance repo: a copy of a Bistro Booking example (v0.1 by default), pushed to a bare remote. */
+export function complianceRepo(example = EXAMPLE): { dir: string; remote: string } {
   const root = tmp('ca-compliance-');
   const remote = join(root, 'remote.git');
   const dir = join(root, 'work');
   git(root, 'init', '-q', '--bare', '-b', 'main', remote);
-  cpSync(EXAMPLE, dir, { recursive: true });
+  cpSync(example, dir, { recursive: true });
   git(dir, 'init', '-q', '-b', 'main');
   git(dir, 'add', '-A');
   git(dir, 'commit', '-q', '-m', 'initial');

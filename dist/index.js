@@ -2160,9 +2160,9 @@ var require_dispatcher_base = __commonJS({
       }
       close(callback) {
         if (callback === void 0) {
-          return new Promise((resolve3, reject) => {
+          return new Promise((resolve4, reject) => {
             this.close((err, data) => {
-              return err ? reject(err) : resolve3(data);
+              return err ? reject(err) : resolve4(data);
             });
           });
         }
@@ -2200,12 +2200,12 @@ var require_dispatcher_base = __commonJS({
           err = null;
         }
         if (callback === void 0) {
-          return new Promise((resolve3, reject) => {
+          return new Promise((resolve4, reject) => {
             this.destroy(err, (err2, data) => {
               return err2 ? (
                 /* istanbul ignore next: should never error */
                 reject(err2)
-              ) : resolve3(data);
+              ) : resolve4(data);
             });
           });
         }
@@ -3668,8 +3668,8 @@ var require_webidl = __commonJS({
       return new TypeError(`${message.header}: ${message.message}`);
     };
     webidl.errors.conversionFailed = function(context3) {
-      const plural = context3.types.length === 1 ? "" : " one of";
-      const message = `${context3.argument} could not be converted to${plural}: ${context3.types.join(", ")}.`;
+      const plural2 = context3.types.length === 1 ? "" : " one of";
+      const message = `${context3.argument} could not be converted to${plural2}: ${context3.types.join(", ")}.`;
       return webidl.errors.exception({
         header: context3.prefix,
         message
@@ -4472,8 +4472,8 @@ var require_util2 = __commonJS({
     function createDeferredPromise() {
       let res;
       let rej;
-      const promise = new Promise((resolve3, reject) => {
-        res = resolve3;
+      const promise = new Promise((resolve4, reject) => {
+        res = resolve4;
         rej = reject;
       });
       return { promise, resolve: res, reject: rej };
@@ -6724,12 +6724,12 @@ upgrade: ${upgrade}\r
           cb();
         }
       }
-      const waitForDrain = () => new Promise((resolve3, reject) => {
+      const waitForDrain = () => new Promise((resolve4, reject) => {
         assert(callback === null);
         if (socket[kError]) {
           reject(socket[kError]);
         } else {
-          callback = resolve3;
+          callback = resolve4;
         }
       });
       socket.on("close", onDrain).on("drain", onDrain);
@@ -7399,12 +7399,12 @@ var require_client_h2 = __commonJS({
           cb();
         }
       }
-      const waitForDrain = () => new Promise((resolve3, reject) => {
+      const waitForDrain = () => new Promise((resolve4, reject) => {
         assert(callback === null);
         if (socket[kError]) {
           reject(socket[kError]);
         } else {
-          callback = resolve3;
+          callback = resolve4;
         }
       });
       h2stream.on("close", onDrain).on("drain", onDrain);
@@ -7883,16 +7883,16 @@ var require_client = __commonJS({
         return this[kNeedDrain] < 2;
       }
       async [kClose]() {
-        return new Promise((resolve3) => {
+        return new Promise((resolve4) => {
           if (this[kSize]) {
-            this[kClosedResolve] = resolve3;
+            this[kClosedResolve] = resolve4;
           } else {
-            resolve3(null);
+            resolve4(null);
           }
         });
       }
       async [kDestroy](err) {
-        return new Promise((resolve3) => {
+        return new Promise((resolve4) => {
           const requests = this[kQueue].splice(this[kPendingIdx]);
           for (let i = 0; i < requests.length; i++) {
             const request2 = requests[i];
@@ -7903,7 +7903,7 @@ var require_client = __commonJS({
               this[kClosedResolve]();
               this[kClosedResolve] = null;
             }
-            resolve3(null);
+            resolve4(null);
           };
           if (this[kHTTPContext]) {
             this[kHTTPContext].destroy(err, callback);
@@ -7954,7 +7954,7 @@ var require_client = __commonJS({
         });
       }
       try {
-        const socket = await new Promise((resolve3, reject) => {
+        const socket = await new Promise((resolve4, reject) => {
           client[kConnector]({
             host,
             hostname,
@@ -7966,7 +7966,7 @@ var require_client = __commonJS({
             if (err) {
               reject(err);
             } else {
-              resolve3(socket2);
+              resolve4(socket2);
             }
           });
         });
@@ -8302,8 +8302,8 @@ var require_pool_base = __commonJS({
         if (this[kQueue].isEmpty()) {
           await Promise.all(this[kClients].map((c) => c.close()));
         } else {
-          await new Promise((resolve3) => {
-            this[kClosedResolve] = resolve3;
+          await new Promise((resolve4) => {
+            this[kClosedResolve] = resolve4;
           });
         }
       }
@@ -9572,7 +9572,7 @@ var require_readable = __commonJS({
         if (this._readableState.closeEmitted) {
           return null;
         }
-        return await new Promise((resolve3, reject) => {
+        return await new Promise((resolve4, reject) => {
           if (this[kContentLength] > limit) {
             this.destroy(new AbortError());
           }
@@ -9585,7 +9585,7 @@ var require_readable = __commonJS({
             if (signal?.aborted) {
               reject(signal.reason ?? new AbortError());
             } else {
-              resolve3(null);
+              resolve4(null);
             }
           }).on("error", noop3).on("data", function(chunk) {
             limit -= chunk.length;
@@ -9604,7 +9604,7 @@ var require_readable = __commonJS({
     }
     async function consume(stream, type) {
       assert(!stream[kConsume]);
-      return new Promise((resolve3, reject) => {
+      return new Promise((resolve4, reject) => {
         if (isUnusable(stream)) {
           const rState = stream._readableState;
           if (rState.destroyed && rState.closeEmitted === false) {
@@ -9621,7 +9621,7 @@ var require_readable = __commonJS({
             stream[kConsume] = {
               type,
               stream,
-              resolve: resolve3,
+              resolve: resolve4,
               reject,
               length: 0,
               body: []
@@ -9691,18 +9691,18 @@ var require_readable = __commonJS({
       return buffer;
     }
     function consumeEnd(consume2) {
-      const { type, body, resolve: resolve3, stream, length } = consume2;
+      const { type, body, resolve: resolve4, stream, length } = consume2;
       try {
         if (type === "text") {
-          resolve3(chunksDecode(body, length));
+          resolve4(chunksDecode(body, length));
         } else if (type === "json") {
-          resolve3(JSON.parse(chunksDecode(body, length)));
+          resolve4(JSON.parse(chunksDecode(body, length)));
         } else if (type === "arrayBuffer") {
-          resolve3(chunksConcat(body, length).buffer);
+          resolve4(chunksConcat(body, length).buffer);
         } else if (type === "blob") {
-          resolve3(new Blob(body, { type: stream[kContentType] }));
+          resolve4(new Blob(body, { type: stream[kContentType] }));
         } else if (type === "bytes") {
-          resolve3(chunksConcat(body, length));
+          resolve4(chunksConcat(body, length));
         }
         consumeFinish(consume2);
       } catch (err) {
@@ -9959,9 +9959,9 @@ var require_api_request = __commonJS({
     };
     function request2(opts, callback) {
       if (callback === void 0) {
-        return new Promise((resolve3, reject) => {
+        return new Promise((resolve4, reject) => {
           request2.call(this, opts, (err, data) => {
-            return err ? reject(err) : resolve3(data);
+            return err ? reject(err) : resolve4(data);
           });
         });
       }
@@ -10184,9 +10184,9 @@ var require_api_stream = __commonJS({
     };
     function stream(opts, factory, callback) {
       if (callback === void 0) {
-        return new Promise((resolve3, reject) => {
+        return new Promise((resolve4, reject) => {
           stream.call(this, opts, factory, (err, data) => {
-            return err ? reject(err) : resolve3(data);
+            return err ? reject(err) : resolve4(data);
           });
         });
       }
@@ -10471,9 +10471,9 @@ var require_api_upgrade = __commonJS({
     };
     function upgrade(opts, callback) {
       if (callback === void 0) {
-        return new Promise((resolve3, reject) => {
+        return new Promise((resolve4, reject) => {
           upgrade.call(this, opts, (err, data) => {
-            return err ? reject(err) : resolve3(data);
+            return err ? reject(err) : resolve4(data);
           });
         });
       }
@@ -10565,9 +10565,9 @@ var require_api_connect = __commonJS({
     };
     function connect(opts, callback) {
       if (callback === void 0) {
-        return new Promise((resolve3, reject) => {
+        return new Promise((resolve4, reject) => {
           connect.call(this, opts, (err, data) => {
-            return err ? reject(err) : resolve3(data);
+            return err ? reject(err) : resolve4(data);
           });
         });
       }
@@ -11232,9 +11232,9 @@ var require_pluralizer = __commonJS({
       this: "these"
     };
     module.exports = class Pluralizer {
-      constructor(singular, plural) {
+      constructor(singular, plural2) {
         this.singular = singular;
-        this.plural = plural;
+        this.plural = plural2;
       }
       pluralize(count) {
         const one = count === 1;
@@ -14430,7 +14430,7 @@ var require_fetch = __commonJS({
       function dispatch({ body }) {
         const url = requestCurrentURL(request2);
         const agent = fetchParams.controller.dispatcher;
-        return new Promise((resolve3, reject) => agent.dispatch(
+        return new Promise((resolve4, reject) => agent.dispatch(
           {
             path: url.pathname + url.search,
             origin: url.origin,
@@ -14506,7 +14506,7 @@ var require_fetch = __commonJS({
               }
               this.body = new Readable({ read: resume });
               const onError = this.onError.bind(this);
-              resolve3({
+              resolve4({
                 status,
                 statusText,
                 headersList,
@@ -14549,7 +14549,7 @@ var require_fetch = __commonJS({
               for (let i = 0; i < rawHeaders.length; i += 2) {
                 headersList.append(bufferToLowerCasedHeaderName(rawHeaders[i]), rawHeaders[i + 1].toString("latin1"), true);
               }
-              resolve3({
+              resolve4({
                 status,
                 statusText: STATUS_CODES[status],
                 headersList,
@@ -18290,8 +18290,8 @@ var require_util8 = __commonJS({
       return true;
     }
     function delay(ms) {
-      return new Promise((resolve3) => {
-        setTimeout(resolve3, ms).unref();
+      return new Promise((resolve4) => {
+        setTimeout(resolve4, ms).unref();
       });
     }
     module.exports = {
@@ -19273,11 +19273,11 @@ var require_lib = __commonJS({
     })();
     var __awaiter3 = exports && exports.__awaiter || function(thisArg, _arguments, P, generator) {
       function adopt(value) {
-        return value instanceof P ? value : new P(function(resolve3) {
-          resolve3(value);
+        return value instanceof P ? value : new P(function(resolve4) {
+          resolve4(value);
         });
       }
-      return new (P || (P = Promise))(function(resolve3, reject) {
+      return new (P || (P = Promise))(function(resolve4, reject) {
         function fulfilled(value) {
           try {
             step(generator.next(value));
@@ -19293,7 +19293,7 @@ var require_lib = __commonJS({
           }
         }
         function step(result) {
-          result.done ? resolve3(result.value) : adopt(result.value).then(fulfilled, rejected);
+          result.done ? resolve4(result.value) : adopt(result.value).then(fulfilled, rejected);
         }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
@@ -19380,26 +19380,26 @@ var require_lib = __commonJS({
       }
       readBody() {
         return __awaiter3(this, void 0, void 0, function* () {
-          return new Promise((resolve3) => __awaiter3(this, void 0, void 0, function* () {
+          return new Promise((resolve4) => __awaiter3(this, void 0, void 0, function* () {
             let output = Buffer.alloc(0);
             this.message.on("data", (chunk) => {
               output = Buffer.concat([output, chunk]);
             });
             this.message.on("end", () => {
-              resolve3(output.toString());
+              resolve4(output.toString());
             });
           }));
         });
       }
       readBodyBuffer() {
         return __awaiter3(this, void 0, void 0, function* () {
-          return new Promise((resolve3) => __awaiter3(this, void 0, void 0, function* () {
+          return new Promise((resolve4) => __awaiter3(this, void 0, void 0, function* () {
             const chunks = [];
             this.message.on("data", (chunk) => {
               chunks.push(chunk);
             });
             this.message.on("end", () => {
-              resolve3(Buffer.concat(chunks));
+              resolve4(Buffer.concat(chunks));
             });
           }));
         });
@@ -19607,14 +19607,14 @@ var require_lib = __commonJS({
        */
       requestRaw(info2, data) {
         return __awaiter3(this, void 0, void 0, function* () {
-          return new Promise((resolve3, reject) => {
+          return new Promise((resolve4, reject) => {
             function callbackForResult(err, res) {
               if (err) {
                 reject(err);
               } else if (!res) {
                 reject(new Error("Unknown error"));
               } else {
-                resolve3(res);
+                resolve4(res);
               }
             }
             this.requestRawWithCallback(info2, data, callbackForResult);
@@ -19858,12 +19858,12 @@ var require_lib = __commonJS({
         return __awaiter3(this, void 0, void 0, function* () {
           retryNumber = Math.min(ExponentialBackoffCeiling, retryNumber);
           const ms = ExponentialBackoffTimeSlice * Math.pow(2, retryNumber);
-          return new Promise((resolve3) => setTimeout(() => resolve3(), ms));
+          return new Promise((resolve4) => setTimeout(() => resolve4(), ms));
         });
       }
       _processResponse(res, options) {
         return __awaiter3(this, void 0, void 0, function* () {
-          return new Promise((resolve3, reject) => __awaiter3(this, void 0, void 0, function* () {
+          return new Promise((resolve4, reject) => __awaiter3(this, void 0, void 0, function* () {
             const statusCode = res.message.statusCode || 0;
             const response = {
               statusCode,
@@ -19871,7 +19871,7 @@ var require_lib = __commonJS({
               headers: {}
             };
             if (statusCode === HttpCodes2.NotFound) {
-              resolve3(response);
+              resolve4(response);
             }
             function dateTimeDeserializer(key, value) {
               if (typeof value === "string") {
@@ -19910,7 +19910,7 @@ var require_lib = __commonJS({
               err.result = response.result;
               reject(err);
             } else {
-              resolve3(response);
+              resolve4(response);
             }
           }));
         });
@@ -22872,7 +22872,7 @@ var require_compile = __commonJS({
       const schOrFunc = root.refs[ref];
       if (schOrFunc)
         return schOrFunc;
-      let _sch = resolve3.call(this, root, ref);
+      let _sch = resolve4.call(this, root, ref);
       if (_sch === void 0) {
         const schema = (_a = root.localRefs) === null || _a === void 0 ? void 0 : _a[ref];
         const { schemaId } = this.opts;
@@ -22899,7 +22899,7 @@ var require_compile = __commonJS({
     function sameSchemaEnv(s1, s2) {
       return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
     }
-    function resolve3(root, ref) {
+    function resolve4(root, ref) {
       let sch;
       while (typeof (sch = this.refs[ref]) == "string")
         ref = sch;
@@ -23763,7 +23763,7 @@ var require_fast_uri = __commonJS({
       }
       return uri;
     }
-    function resolve3(baseURI, relativeURI, options) {
+    function resolve4(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const {
         parsed: baseParsed,
@@ -24154,7 +24154,7 @@ var require_fast_uri = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize,
-      resolve: resolve3,
+      resolve: resolve4,
       resolveComponent,
       equal,
       serialize,
@@ -35459,11 +35459,11 @@ import { EOL as EOL3 } from "os";
 import { constants, promises } from "fs";
 var __awaiter = function(thisArg, _arguments, P, generator) {
   function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve3) {
-      resolve3(value);
+    return value instanceof P ? value : new P(function(resolve4) {
+      resolve4(value);
     });
   }
-  return new (P || (P = Promise))(function(resolve3, reject) {
+  return new (P || (P = Promise))(function(resolve4, reject) {
     function fulfilled(value) {
       try {
         step(generator.next(value));
@@ -35479,7 +35479,7 @@ var __awaiter = function(thisArg, _arguments, P, generator) {
       }
     }
     function step(result) {
-      result.done ? resolve3(result.value) : adopt(result.value).then(fulfilled, rejected);
+      result.done ? resolve4(result.value) : adopt(result.value).then(fulfilled, rejected);
     }
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
@@ -35854,11 +35854,11 @@ var httpClient = __toESM(require_lib(), 1);
 var import_undici2 = __toESM(require_undici(), 1);
 var __awaiter2 = function(thisArg, _arguments, P, generator) {
   function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve3) {
-      resolve3(value);
+    return value instanceof P ? value : new P(function(resolve4) {
+      resolve4(value);
     });
   }
-  return new (P || (P = Promise))(function(resolve3, reject) {
+  return new (P || (P = Promise))(function(resolve4, reject) {
     function fulfilled(value) {
       try {
         step(generator.next(value));
@@ -35874,7 +35874,7 @@ var __awaiter2 = function(thisArg, _arguments, P, generator) {
       }
     }
     function step(result) {
-      result.done ? resolve3(result.value) : adopt(result.value).then(fulfilled, rejected);
+      result.done ? resolve4(result.value) : adopt(result.value).then(fulfilled, rejected);
     }
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
@@ -40436,6 +40436,610 @@ var sync_schema_default = {
   }
 };
 
+// schemas/v0.2/anchors.schema.json
+var anchors_schema_default2 = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/anchors.schema.json",
+  title: "Anchors",
+  description: "The commit of each repo the documents were generated from. Written by the register generator. File: anchors.yaml at the root of the compliance repo.",
+  type: "object",
+  additionalProperties: false,
+  required: ["spec_version", "generated_at", "repos"],
+  properties: {
+    spec_version: { const: "0.2" },
+    generated_at: { type: "string", format: "date-time" },
+    repos: {
+      type: "object",
+      propertyNames: { pattern: "^[A-Za-z0-9_.-]+$" },
+      additionalProperties: {
+        type: "object",
+        additionalProperties: false,
+        required: ["sha"],
+        properties: { sha: { type: "string", pattern: "^[0-9a-f]{40}$" } }
+      }
+    }
+  }
+};
+
+// schemas/v0.2/compliance.schema.json
+var compliance_schema_default2 = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/compliance.schema.json",
+  title: "Compliance repo index",
+  description: "The organisation's identity, and the repos and external tools that make up the information system. File: compliance.yaml at the root of the compliance repo.",
+  type: "object",
+  additionalProperties: false,
+  required: ["spec_version", "organisation", "repos"],
+  properties: {
+    spec_version: { const: "0.2" },
+    organisation: {
+      type: "object",
+      additionalProperties: false,
+      required: ["name"],
+      properties: {
+        name: { type: "string", minLength: 1 },
+        controller: {
+          type: "object",
+          additionalProperties: false,
+          required: ["legal_name", "contact"],
+          description: "The controller (GDPR Art. 30(1)(a)). Inherited by every processing that has no controller of its own.",
+          properties: {
+            legal_name: { type: "string", minLength: 1 },
+            address: { type: "string", minLength: 1 },
+            registration: { type: "string", minLength: 1 },
+            contact: { type: "string", minLength: 1 }
+          }
+        },
+        dpo: {
+          type: "object",
+          additionalProperties: false,
+          required: ["designated"],
+          description: "The data protection officer (GDPR Art. 37). Inherited by every processing that has no dpo of its own.",
+          properties: {
+            designated: { enum: [true, false, "unknown"] },
+            name: { type: "string", minLength: 1 },
+            contact: { type: "string", minLength: 1 },
+            reason: { type: "string", minLength: 1, description: "Why no DPO is required, when designated is false." }
+          },
+          allOf: [
+            { if: { properties: { designated: { const: true } } }, then: { required: ["name", "contact"] } },
+            { if: { properties: { designated: { const: false } } }, then: { required: ["reason"] } }
+          ]
+        },
+        representative: {
+          type: "object",
+          additionalProperties: false,
+          required: ["required"],
+          description: "The representative in the Union (GDPR Art. 27).",
+          properties: {
+            required: { enum: [true, false, "unknown"] },
+            name: { type: "string", minLength: 1 },
+            contact: { type: "string", minLength: 1 },
+            reason: { type: "string", minLength: 1, description: 'Why none is required, when required is false: "established in the EU".' }
+          },
+          if: { properties: { required: { const: true } } },
+          then: { required: ["name", "contact"] }
+        },
+        privacy_contact: { type: "string", minLength: 1, description: "Where persons exercise their rights." }
+      }
+    },
+    repos: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["name", "url", "owner", "expected_to_send"],
+        properties: {
+          name: { type: "string", pattern: "^[A-Za-z0-9_.-]+$", description: "Repo name without owner; also the folder name under services/." },
+          url: { type: "string", format: "uri" },
+          owner: { type: "string", minLength: 1, description: "Owning person or team." },
+          expected_to_send: { type: "boolean" },
+          components: { type: "array", minItems: 1, items: { $ref: "#/$defs/id" } }
+        }
+      }
+    },
+    declared_tools: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "name", "path"],
+        properties: {
+          id: { $ref: "#/$defs/id" },
+          name: { type: "string", minLength: 1 },
+          path: { type: "string", pattern: "^declared/[a-z0-9][a-z0-9-]*/manifest\\.yaml$" }
+        }
+      }
+    }
+  },
+  $defs: {
+    id: { type: "string", pattern: "^[a-z0-9][a-z0-9-]*$" }
+  }
+};
+
+// schemas/v0.2/manifest.schema.json
+var manifest_schema_default2 = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/manifest.schema.json",
+  title: "Compliance manifest",
+  description: "What one repo (or one declared external tool) does with personal data. File: .compliance/manifest.yaml.",
+  type: "object",
+  additionalProperties: false,
+  required: ["spec_version", "service", "personal_data", "storage", "processors", "outbound_flows", "automated_decisions", "ai_features"],
+  properties: {
+    spec_version: { const: "0.2" },
+    service: {
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "description", "controller", "source"],
+      properties: {
+        name: { type: "string", minLength: 1 },
+        repo: { type: "string", pattern: "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", description: "owner/name; absent for declared external tools." },
+        description: { type: "string", minLength: 1 },
+        controller: { $ref: "#/$defs/controller" },
+        controller_rationale: { type: "string", minLength: 1, description: "Why the organisation is not the controller. Expected when the controller of the service or of a component is not organisation." },
+        privacy_by_design: { type: "array", minItems: 1, items: { type: "string", minLength: 1 }, description: "Measures taken in the design (GDPR Art. 25)." },
+        components: {
+          type: "array",
+          minItems: 1,
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["id", "kind"],
+            properties: {
+              id: { $ref: "#/$defs/id" },
+              kind: { type: "string", minLength: 1 },
+              controller: { $ref: "#/$defs/controller", description: "Overrides service.controller for the items of this component." }
+            }
+          }
+        },
+        source: { $ref: "#/$defs/source" }
+      }
+    },
+    personal_data: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "subjects", "fields", "purpose", "source"],
+        properties: {
+          id: { $ref: "#/$defs/id" },
+          component: { $ref: "#/$defs/id" },
+          subjects: { type: "array", minItems: 1, items: { type: "string", minLength: 1 } },
+          fields: {
+            type: "array",
+            minItems: 1,
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["name", "category"],
+              properties: {
+                name: { type: "string", minLength: 1 },
+                category: { enum: ["identity", "contact", "financial", "location", "usage", "professional", "connection", "health", "special", "credential", "unknown"] }
+              }
+            }
+          },
+          purpose: { type: "string", minLength: 1 },
+          legal_basis: { $ref: "#/$defs/legal_basis" },
+          source: { $ref: "#/$defs/source" },
+          linked_files: { $ref: "#/$defs/linked_files" }
+        }
+      }
+    },
+    storage: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "kind", "location", "data", "retention", "source"],
+        properties: {
+          id: { $ref: "#/$defs/id" },
+          component: { $ref: "#/$defs/id" },
+          kind: { enum: ["database", "file", "object-storage", "cache", "memory", "keychain", "browser", "log", "backup", "other"] },
+          location: { type: "string", minLength: 1 },
+          data: { $ref: "#/$defs/data_refs" },
+          retention: { $ref: "#/$defs/retention" },
+          source: { $ref: "#/$defs/source" },
+          linked_files: { $ref: "#/$defs/linked_files" }
+        }
+      }
+    },
+    processors: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "name", "service", "country", "dpa", "transfer_outside_eu", "source"],
+        properties: {
+          id: { $ref: "#/$defs/id" },
+          component: { $ref: "#/$defs/id" },
+          name: { type: "string", minLength: 1 },
+          service: { type: "string", minLength: 1 },
+          country: { $ref: "#/$defs/country" },
+          dpa: { enum: ["yes", "no", "unknown"] },
+          dpa_ref: { type: "string", minLength: 1, description: "Where the signed DPA, or the provider's standard terms, is." },
+          transfer_outside_eu: { type: "boolean" },
+          safeguard: { type: "string", minLength: 1 },
+          data: { $ref: "#/$defs/data_refs" },
+          source: { $ref: "#/$defs/source" },
+          linked_files: { $ref: "#/$defs/linked_files" }
+        }
+      }
+    },
+    outbound_flows: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "to", "data", "purpose", "account", "source"],
+        properties: {
+          id: { $ref: "#/$defs/id" },
+          component: { $ref: "#/$defs/id" },
+          to: {
+            type: "object",
+            additionalProperties: false,
+            required: ["name", "country"],
+            properties: {
+              name: { type: "string", minLength: 1 },
+              country: { oneOf: [{ $ref: "#/$defs/country" }, { const: "unknown" }] }
+            }
+          },
+          data: { $ref: "#/$defs/data_refs" },
+          purpose: { type: "string", minLength: 1 },
+          account: { enum: ["organisation", "user", "none"] },
+          processor: { $ref: "#/$defs/id", description: "The id of a processor of the same manifest: the flow goes to that processor." },
+          safeguard: { type: "string", minLength: 1, description: "The transfer safeguard of this flow." },
+          source: { $ref: "#/$defs/source" },
+          linked_files: { $ref: "#/$defs/linked_files" }
+        }
+      }
+    },
+    automated_decisions: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "description", "legal_or_similar_effect", "human_review", "source"],
+        properties: {
+          id: { $ref: "#/$defs/id" },
+          component: { $ref: "#/$defs/id" },
+          description: { type: "string", minLength: 1 },
+          legal_or_similar_effect: { type: "boolean" },
+          human_review: { type: "boolean" },
+          source: { $ref: "#/$defs/source" },
+          linked_files: { $ref: "#/$defs/linked_files" }
+        }
+      }
+    },
+    ai_features: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "description", "generates_content", "interacts_with_persons", "human_review", "source"],
+        properties: {
+          id: { $ref: "#/$defs/id" },
+          component: { $ref: "#/$defs/id" },
+          description: { type: "string", minLength: 1 },
+          generates_content: { type: "boolean" },
+          interacts_with_persons: { type: "boolean" },
+          human_review: { type: "boolean" },
+          marking: { type: "string", minLength: 1 },
+          role: { enum: ["provider", "deployer", "to-assess"], description: "AI Act role of the organisation for this feature." },
+          risk: {
+            type: "object",
+            additionalProperties: false,
+            required: ["level"],
+            properties: {
+              level: { enum: ["prohibited", "high", "limited", "minimal", "to-assess"] },
+              reason: { type: "string", minLength: 1 }
+            }
+          },
+          obligations: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["id", "status"],
+              properties: {
+                id: {
+                  enum: [
+                    "art4-ai-literacy",
+                    "art50-interaction",
+                    "art50-synthetic-content",
+                    "art50-deepfake",
+                    "art50-emotion-biometric",
+                    "art9-risk-management",
+                    "art10-data-governance",
+                    "art11-technical-documentation",
+                    "art12-logging",
+                    "art13-transparency",
+                    "art14-human-oversight",
+                    "art15-accuracy-robustness",
+                    "art26-deployer-duties",
+                    "art27-fria"
+                  ]
+                },
+                status: { enum: ["done", "open", "not-applicable"] },
+                ref: { type: "string", minLength: 1 }
+              }
+            }
+          },
+          data: { $ref: "#/$defs/data_refs" },
+          source: { $ref: "#/$defs/source" },
+          linked_files: { $ref: "#/$defs/linked_files" }
+        }
+      }
+    },
+    notices: {
+      type: "array",
+      description: "Where the persons are told about the processing (GDPR Art. 13 and 14). Referenced by information.notices in processing files.",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "kind", "ref", "source"],
+        properties: {
+          id: { $ref: "#/$defs/id" },
+          component: { $ref: "#/$defs/id" },
+          kind: { enum: ["page", "screen", "banner", "email", "none"] },
+          ref: { type: "string", minLength: 1, description: "A URL, a file path or a screen name." },
+          source: { $ref: "#/$defs/source" },
+          linked_files: { $ref: "#/$defs/linked_files" }
+        }
+      }
+    },
+    linked_files: { $ref: "#/$defs/linked_files" }
+  },
+  $defs: {
+    id: { type: "string", pattern: "^[a-z0-9][a-z0-9-]*$" },
+    controller: { enum: ["organisation", "user-of-the-app", "shared"] },
+    country: { type: "string", pattern: "^[A-Z]{2}$", description: "ISO 3166-1 alpha-2." },
+    legal_basis: { enum: ["consent", "contract", "legal-obligation", "vital-interests", "public-task", "legitimate-interests", "not-applicable"] },
+    data_refs: { type: "array", items: { $ref: "#/$defs/id" }, description: "Ids of personal_data items of the same manifest." },
+    linked_files: { type: "array", minItems: 1, items: { type: "string", minLength: 1 }, description: "Glob patterns, relative to the repo root." },
+    source: {
+      type: "object",
+      additionalProperties: false,
+      required: ["kind", "ref"],
+      properties: {
+        kind: { enum: ["code", "spec", "declared"] },
+        ref: { type: "string", minLength: 1 }
+      }
+    },
+    retention: {
+      type: "object",
+      additionalProperties: false,
+      required: ["duration"],
+      properties: {
+        duration: {
+          type: "string",
+          pattern: "^(none|session|unknown|P(?!$)(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?=\\d)(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?)$",
+          description: "An ISO 8601 duration (P3Y, P30D, PT12H) or none, session, unknown."
+        },
+        trigger: { type: "string", minLength: 1 }
+      }
+    }
+  }
+};
+
+// schemas/v0.2/processing.schema.json
+var processing_schema_default2 = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/processing.schema.json",
+  title: "Processing activity",
+  description: "One processing activity of the organisation (GDPR Art. 30), with the checks a DPO reviews. File: processings/<id>/processing.yaml in the compliance repo.",
+  type: "object",
+  additionalProperties: false,
+  required: ["spec_version", "id", "name", "purpose", "data_subjects", "legal_basis", "services", "source"],
+  properties: {
+    spec_version: { const: "0.2" },
+    id: { $ref: "#/$defs/id" },
+    name: { type: "string", minLength: 1 },
+    purpose: { type: "string", minLength: 1 },
+    controller: { $ref: "#/$defs/contact", description: "Absent: organisation.controller of compliance.yaml." },
+    dpo: { $ref: "#/$defs/contact", description: "Absent: organisation.dpo of compliance.yaml." },
+    joint_controllers: {
+      type: "array",
+      description: "Joint controllers (GDPR Art. 26). [] means none, stated by a person; absent means not confirmed.",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["name", "contact", "arrangement"],
+        properties: {
+          name: { type: "string", minLength: 1 },
+          contact: { type: "string", minLength: 1 },
+          arrangement: { type: "string", minLength: 1, description: "The arrangement between the joint controllers, or where it is." }
+        }
+      }
+    },
+    data_subjects: { type: "array", minItems: 1, items: { type: "string", minLength: 1 } },
+    legal_basis: { $ref: "#/$defs/legal_basis" },
+    legal_basis_detail: {
+      type: "object",
+      additionalProperties: false,
+      minProperties: 1,
+      properties: {
+        balancing_test: {
+          type: "object",
+          additionalProperties: false,
+          required: ["interest", "necessity", "impact", "safeguards"],
+          description: "Expected when legal_basis is legitimate-interests.",
+          properties: {
+            interest: { $ref: "#/$defs/text" },
+            necessity: { $ref: "#/$defs/text" },
+            impact: { $ref: "#/$defs/text" },
+            safeguards: { $ref: "#/$defs/text" }
+          }
+        },
+        consent: {
+          type: "object",
+          additionalProperties: false,
+          required: ["collection", "withdrawal"],
+          description: "Expected when legal_basis is consent.",
+          properties: {
+            collection: { $ref: "#/$defs/text" },
+            withdrawal: { $ref: "#/$defs/text" }
+          }
+        },
+        reference: { $ref: "#/$defs/text", description: "Expected when legal_basis is contract, legal-obligation, public-task or vital-interests." }
+      }
+    },
+    dpia: {
+      type: "object",
+      additionalProperties: false,
+      required: ["required"],
+      properties: {
+        required: { enum: ["yes", "no", "to-assess"] },
+        criteria: {
+          type: "array",
+          uniqueItems: true,
+          description: "The EDPB criteria that apply; [] means none.",
+          items: { enum: ["evaluation", "automated-decision", "monitoring", "sensitive", "large-scale", "matching", "vulnerable", "innovative", "prevents-rights"] }
+        },
+        ref: { $ref: "#/$defs/text", description: "The DPIA document, when one exists." }
+      }
+    },
+    information: {
+      type: "object",
+      additionalProperties: false,
+      anyOf: [{ required: ["notices"] }, { required: ["text"] }],
+      description: "How the persons are told (GDPR Art. 13 and 14).",
+      properties: {
+        notices: {
+          type: "array",
+          minItems: 1,
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["id"],
+            oneOf: [{ required: ["repo"] }, { required: ["tool"] }],
+            properties: {
+              repo: { $ref: "#/$defs/repo_name", description: "A repo listed in compliance.yaml." },
+              tool: { $ref: "#/$defs/id", description: "A declared tool listed in compliance.yaml." },
+              id: { $ref: "#/$defs/id", description: "A notices id of that service's manifest." }
+            }
+          }
+        },
+        text: { $ref: "#/$defs/text" }
+      }
+    },
+    sensitive_data: {
+      description: "Special categories of data (GDPR Art. 9): none, to-assess, or the categories found.",
+      oneOf: [
+        { enum: ["none", "to-assess"] },
+        {
+          type: "array",
+          minItems: 1,
+          uniqueItems: true,
+          items: { enum: ["racial-ethnic", "political", "religious", "union", "genetic", "biometric", "health", "sex-life", "criminal"] }
+        }
+      ]
+    },
+    services: {
+      type: "array",
+      minItems: 1,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        oneOf: [{ required: ["repo"] }, { required: ["tool"] }],
+        properties: {
+          repo: { $ref: "#/$defs/repo_name", description: "A repo listed in compliance.yaml." },
+          tool: { $ref: "#/$defs/id", description: "A declared tool listed in compliance.yaml." },
+          data: { type: "array", items: { $ref: "#/$defs/id" }, description: "personal_data ids of that service's manifest. Absent means all of them." },
+          recipients: { type: "array", items: { $ref: "#/$defs/id" }, description: "processors and outbound_flows ids of that service's manifest that belong to this processing. Absent means those that share data with the entry's scope." }
+        }
+      }
+    },
+    security_measures: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["measure", "source"],
+        properties: { measure: { type: "string", minLength: 1 }, source: { $ref: "#/$defs/source" } }
+      }
+    },
+    recipients: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["name", "source"],
+        properties: { name: { type: "string", minLength: 1 }, source: { $ref: "#/$defs/source" } }
+      }
+    },
+    retention: {
+      type: "object",
+      additionalProperties: false,
+      required: ["duration", "source"],
+      properties: {
+        duration: { type: "string", pattern: "^(none|session|unknown|P(?!$)(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?=\\d)(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?)$" },
+        trigger: { type: "string", minLength: 1 },
+        source: { $ref: "#/$defs/source" }
+      }
+    },
+    source: { $ref: "#/$defs/source" }
+  },
+  $defs: {
+    id: { type: "string", pattern: "^[a-z0-9][a-z0-9-]*$" },
+    repo_name: { type: "string", pattern: "^[A-Za-z0-9_.-]+$" },
+    text: { type: "string", minLength: 1 },
+    legal_basis: { enum: ["consent", "contract", "legal-obligation", "vital-interests", "public-task", "legitimate-interests", "not-applicable"] },
+    contact: {
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "contact"],
+      properties: { name: { type: "string", minLength: 1 }, contact: { type: "string", minLength: 1 } }
+    },
+    source: {
+      type: "object",
+      additionalProperties: false,
+      required: ["kind", "ref"],
+      properties: { kind: { enum: ["code", "spec", "declared"] }, ref: { type: "string", minLength: 1 } }
+    }
+  }
+};
+
+// schemas/v0.2/sync.schema.json
+var sync_schema_default2 = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/sync.schema.json",
+  title: "Sync record",
+  description: "Written by the Action each time a repo sends its manifest. File: services/<repo>/sync.yaml.",
+  type: "object",
+  additionalProperties: false,
+  required: ["spec_version", "repo", "sha", "received_at", "lag"],
+  properties: {
+    spec_version: { const: "0.2" },
+    repo: { type: "string", pattern: "^[A-Za-z0-9_.-]+$" },
+    sha: { $ref: "#/$defs/sha", description: "Commit of the repo whose manifest was sent." },
+    received_at: { type: "string", format: "date-time" },
+    lag: {
+      oneOf: [
+        {
+          type: "object",
+          additionalProperties: false,
+          required: ["anchor", "count", "commits"],
+          properties: {
+            anchor: { oneOf: [{ $ref: "#/$defs/sha" }, { type: "null" }] },
+            count: { type: "integer", minimum: 0 },
+            commits: { type: "array", items: { $ref: "#/$defs/sha" } }
+          }
+        },
+        {
+          type: "object",
+          additionalProperties: false,
+          required: ["status"],
+          properties: { status: { const: "unknown" } }
+        }
+      ]
+    }
+  },
+  $defs: {
+    sha: { type: "string", pattern: "^[0-9a-f]{40}$" }
+  }
+};
+
 // src/yaml.ts
 var import_yaml = __toESM(require_dist2(), 1);
 function parseStrict(text) {
@@ -40459,41 +41063,72 @@ function parseStrict(text) {
 
 // schemas/SOURCE.json
 var SOURCE_default = {
-  spec_version: "0.1",
-  source: "C2-POLY/compliance-spec",
-  commit: "bc9351ce99b17c82c114ff85ed4569b5323db219",
-  files: [
-    "anchors.schema.json",
-    "compliance.schema.json",
-    "manifest.schema.json",
-    "processing.schema.json",
-    "sync.schema.json"
+  spec_versions: [
+    "0.1",
+    "0.2"
   ],
+  source: "C2-POLY/compliance-spec",
+  commit: "df6514dad96757e34e300b54182d3e8ef94ada26",
+  schemas: {
+    "0.1": [
+      "anchors.schema.json",
+      "compliance.schema.json",
+      "manifest.schema.json",
+      "processing.schema.json",
+      "sync.schema.json"
+    ],
+    "0.2": [
+      "anchors.schema.json",
+      "compliance.schema.json",
+      "manifest.schema.json",
+      "processing.schema.json",
+      "sync.schema.json"
+    ]
+  },
   templates: [
-    "register/register.md.tmpl"
+    "register/register.md.tmpl",
+    "register/register.en.md.tmpl",
+    "register/register.fr.md.tmpl"
   ]
 };
 
 // src/schema.ts
-var SPEC_VERSION = SOURCE_default.spec_version;
 var SPEC_COMMIT = SOURCE_default.commit;
-var SCHEMAS = { manifest: manifest_schema_default, processing: processing_schema_default, compliance: compliance_schema_default, sync: sync_schema_default, anchors: anchors_schema_default };
+var SCHEMAS = {
+  "0.1": { manifest: manifest_schema_default, processing: processing_schema_default, compliance: compliance_schema_default, sync: sync_schema_default, anchors: anchors_schema_default },
+  "0.2": { manifest: manifest_schema_default2, processing: processing_schema_default2, compliance: compliance_schema_default2, sync: sync_schema_default2, anchors: anchors_schema_default2 }
+};
+var SPEC_VERSIONS = Object.keys(SCHEMAS);
+function versionOf(doc) {
+  const v = doc?.spec_version;
+  return typeof v === "string" && v in SCHEMAS ? v : "0.1";
+}
 var AjvCtor = import__.default.default ?? import__.default;
 var addFormatsFn = import_ajv_formats.default.default ?? import_ajv_formats.default;
 var ajv = new AjvCtor({ allErrors: true });
 addFormatsFn(ajv);
-for (const [name, schema] of Object.entries(SCHEMAS)) ajv.addSchema(schema, name);
+for (const [version, schemas] of Object.entries(SCHEMAS)) {
+  for (const [name, schema] of Object.entries(schemas)) ajv.addSchema(schema, `${version}/${name}`);
+}
 function crossChecks(name, doc) {
   if (name !== "manifest" || typeof doc !== "object" || doc === null) return [];
   const m = doc;
   const errors = [];
   const fail = (instancePath, message) => errors.push({ instancePath, keyword: "ref", message });
-  const dataIds = new Set((m.personal_data ?? []).map((item) => item?.id));
-  const componentIds = new Set((m.service?.components ?? []).map((item) => item?.id));
-  for (const list of ["personal_data", "storage", "processors", "outbound_flows", "automated_decisions", "ai_features"]) {
+  const duplicate = (instancePath, id) => errors.push({ instancePath, keyword: "uniqueId", message: `duplicate id "${id}"` });
+  const ids = (list) => new Set((list ?? []).map((item) => item?.id));
+  const dataIds = ids(m.personal_data);
+  const componentIds = ids(m.service?.components);
+  const processorIds = ids(m.processors);
+  const seenComponents = /* @__PURE__ */ new Set();
+  (m.service?.components ?? []).forEach((item, i) => {
+    if (seenComponents.has(item?.id)) duplicate(`/service/components/${i}/id`, item.id);
+    seenComponents.add(item?.id);
+  });
+  for (const list of ["personal_data", "storage", "processors", "outbound_flows", "automated_decisions", "ai_features", "notices"]) {
     const seen = /* @__PURE__ */ new Set();
     (m[list] ?? []).forEach((item, i) => {
-      if (seen.has(item?.id)) errors.push({ instancePath: `/${list}/${i}/id`, keyword: "uniqueId", message: `duplicate id "${item.id}"` });
+      if (seen.has(item?.id)) duplicate(`/${list}/${i}/id`, item.id);
       seen.add(item?.id);
       (item?.data ?? []).forEach((ref, j) => {
         if (!dataIds.has(ref)) fail(`/${list}/${i}/data/${j}`, `no personal_data with id "${ref}"`);
@@ -40501,12 +41136,22 @@ function crossChecks(name, doc) {
       if (item?.component !== void 0 && !componentIds.has(item.component)) {
         fail(`/${list}/${i}/component`, `no service component with id "${item.component}"`);
       }
+      if (list === "outbound_flows" && item?.processor !== void 0 && !processorIds.has(item.processor)) {
+        fail(`/${list}/${i}/processor`, `no processor with id "${item.processor}"`);
+      }
+      if (list === "ai_features") {
+        const obligations = /* @__PURE__ */ new Set();
+        (item?.obligations ?? []).forEach((o, j) => {
+          if (obligations.has(o?.id)) duplicate(`/${list}/${i}/obligations/${j}/id`, o.id);
+          obligations.add(o?.id);
+        });
+      }
     });
   }
   return errors;
 }
 function validateDocument(name, doc) {
-  const validate = ajv.getSchema(name);
+  const validate = ajv.getSchema(`${versionOf(doc)}/${name}`);
   const errors = validate(doc) ? [] : validate.errors ?? [];
   return [...errors, ...crossChecks(name, doc)].map((e) => ({
     instancePath: e.instancePath || "/",
@@ -40531,14 +41176,14 @@ function loadAndValidateManifest(path) {
     throw new ActionError(`Manifest not found at "${path}". Create it as described in ${SPEC_URL}`);
   }
   const text = readFileSync2(path, "utf8");
-  const { errors } = validateText("manifest", text);
+  const { doc, errors } = validateText("manifest", text);
   if (errors.length > 0) {
     for (const e of errors) {
       error(`${e.instancePath}: ${e.message}`, { file: path, title: "Invalid compliance manifest" });
     }
     throw new ActionError(`${path} is not a valid manifest: ${errors.length} error${errors.length === 1 ? "" : "s"} (see annotations).`);
   }
-  info(`${path} is a valid manifest (schema v${SPEC_VERSION}).`);
+  info(`${path} is a valid manifest (schema v${versionOf(doc)}).`);
   return text;
 }
 function runCheck(manifestPath) {
@@ -40556,10 +41201,10 @@ import { join, relative } from "node:path";
 
 // src/git.ts
 import { execFile } from "node:child_process";
-var runGit = (args, cwd, env) => new Promise((resolve3) => {
+var runGit = (args, cwd, env) => new Promise((resolve4) => {
   execFile("git", args, { cwd, env: env ? { ...process.env, ...env } : process.env, maxBuffer: 64 * 1024 * 1024 }, (error2, stdout, stderr) => {
     const code = error2 ? typeof error2.code === "number" ? error2.code : 1 : 0;
-    resolve3({ code, stdout, stderr: error2 && typeof error2.code !== "number" ? error2.message : stderr });
+    resolve4({ code, stdout, stderr: error2 && typeof error2.code !== "number" ? error2.message : stderr });
   });
 });
 async function mustGit(run2, args, cwd, env) {
@@ -40800,6 +41445,7 @@ function assertListed(compliancePath, r) {
   if (m[1].toLowerCase() !== r.owner.toLowerCase() || m[2].toLowerCase() !== r.name.toLowerCase()) {
     throw new ActionError(`Repo "${r.repo}" does not match the URL listed in compliance.yaml (${entry.url}).`);
   }
+  return versionOf(doc);
 }
 async function verifySource(o, r) {
   const sender = { owner: r.owner, repo: r.name };
@@ -40820,11 +41466,14 @@ async function runReceive(o) {
   const git = o.git ?? runGit;
   const root = resolve(o.compliancePath);
   const r = readPayload(o.ctx);
-  assertListed(root, r);
+  const repoVersion = assertListed(root, r);
   const { doc: manifestDoc, errors } = validateText("manifest", r.manifest);
   if (errors.length > 0) {
     for (const e of errors) error(`${e.instancePath}: ${e.message}`, { title: `Invalid manifest received from ${r.repo}` });
     throw new ActionError(`The manifest received from ${r.repo} is invalid: ${errors.length} error(s). Nothing was written.`);
+  }
+  if (repoVersion === "0.1" && versionOf(manifestDoc) !== "0.1") {
+    throw new ActionError(`The manifest received from ${r.repo} is spec_version "${versionOf(manifestDoc)}" but compliance.yaml is "0.1": its v0.2 fields would be ignored. Upgrade compliance.yaml to "0.2". Nothing was written.`);
   }
   const declared = manifestDoc.service.repo;
   if (declared !== void 0 && declared.toLowerCase() !== r.repo.toLowerCase()) {
@@ -40838,7 +41487,7 @@ async function runReceive(o) {
   }
   const { reason: _reason, ...lag } = r.lag;
   const sync = {
-    spec_version: SPEC_VERSION,
+    spec_version: repoVersion,
     repo: r.name,
     sha: r.sha,
     received_at: (o.now ?? (() => /* @__PURE__ */ new Date()))().toISOString(),
@@ -40884,16 +41533,555 @@ async function runReceive(o) {
 }
 
 // src/register.ts
-import { existsSync as existsSync4, mkdirSync as mkdirSync2, readFileSync as readFileSync4, readdirSync } from "node:fs";
-import { join as join3, resolve as resolve2 } from "node:path";
+import { existsSync as existsSync5, lstatSync as lstatSync2, mkdirSync as mkdirSync2, readFileSync as readFileSync5, readdirSync } from "node:fs";
+import { join as join4, resolve as resolve3 } from "node:path";
 var import_yaml6 = __toESM(require_dist2(), 1);
+
+// src/dossier.ts
+import { existsSync as existsSync4, readFileSync as readFileSync4 } from "node:fs";
+import { join as join3, resolve as resolve2 } from "node:path";
+var DOSSIER_VERSION = "0.2";
+var TEMPLATES = {
+  en: new URL("../templates/register/register.en.md.tmpl", import.meta.url),
+  fr: new URL("../templates/register/register.fr.md.tmpl", import.meta.url)
+};
+var LANGUAGES = ["en", "fr"];
+var NO_SOURCE = "\u2014";
+var FROM_COMPLIANCE = "declared: compliance.yaml";
+var WORDS = {
+  en: {
+    toComplete: "To complete",
+    noneFound: "None identified in the sources",
+    none: "None",
+    notExpected: "Not expected for this legal basis",
+    notDesignated: "Not designated",
+    notRequired: "Not required",
+    countryUnknown: "country unknown",
+    destinationToAssess: "destination to assess",
+    safeguardNotDeclared: "safeguard not declared",
+    arrangement: "arrangement",
+    interest: "Interest",
+    necessity: "Necessity",
+    impact: "Impact",
+    safeguards: "Safeguards",
+    collection: "Collection",
+    withdrawal: "Withdrawal",
+    reference: "Reference",
+    required: "Required",
+    criteria: "Criteria",
+    dpa: "DPA"
+  },
+  fr: {
+    toComplete: "\xC0 compl\xE9ter",
+    noneFound: "Aucun identifi\xE9 dans les sources",
+    none: "Aucun",
+    notExpected: "Non attendu pour cette base l\xE9gale",
+    notDesignated: "Non d\xE9sign\xE9",
+    notRequired: "Non requis",
+    countryUnknown: "pays inconnu",
+    destinationToAssess: "destination \xE0 \xE9valuer",
+    safeguardNotDeclared: "garantie non d\xE9clar\xE9e",
+    arrangement: "accord",
+    interest: "Int\xE9r\xEAt",
+    necessity: "N\xE9cessit\xE9",
+    impact: "Impact",
+    safeguards: "Garanties",
+    collection: "Recueil",
+    withdrawal: "Retrait",
+    reference: "R\xE9f\xE9rence",
+    required: "Requise",
+    criteria: "Crit\xE8res",
+    dpa: "DPA"
+  }
+};
+var LABELS = {
+  en: {
+    organisation: ["Controller", "Data protection officer", "Representative (Art. 27)", "Privacy contact"],
+    art30: ["(a) Controller", "(a) Joint controller", "(a) Representative", "(a) Data protection officer", "(b) Purposes", "(c) Data subjects", "(c) Personal data", "(d) Recipients", "(e) Transfers", "(f) Erasure time limits", "(g) Security measures"],
+    checks: ["Legal basis", "Legal basis detail", "DPIA", "Information of persons", "Sensitive data", "Processor contracts"],
+    places: { organisation: "Organisation", ai: "AI features", outside: "Outside the register" }
+  },
+  fr: {
+    organisation: ["Responsable du traitement", "D\xE9l\xE9gu\xE9 \xE0 la protection des donn\xE9es", "Repr\xE9sentant (art. 27)", "Contact pour l'exercice des droits"],
+    art30: ["(a) Responsable du traitement", "(a) Responsable conjoint", "(a) Repr\xE9sentant", "(a) D\xE9l\xE9gu\xE9 \xE0 la protection des donn\xE9es", "(b) Finalit\xE9s", "(c) Personnes concern\xE9es", "(c) Donn\xE9es personnelles", "(d) Destinataires", "(e) Transferts", "(f) D\xE9lais d'effacement", "(g) Mesures de s\xE9curit\xE9"],
+    checks: ["Base l\xE9gale", "D\xE9tail de la base l\xE9gale", "AIPD", "Information des personnes", "Donn\xE9es sensibles", "Contrats de sous-traitance"],
+    places: { organisation: "Organisation", ai: "Fonctionnalit\xE9s d'IA", outside: "Hors du registre" }
+  }
+};
+var ROLES = {
+  organisation: { order: 0, en: "Organisation", fr: "Organisation" },
+  dpo: { order: 1, en: "DPO", fr: "DPO" },
+  developer: { order: 2, en: "Developer", fr: "D\xE9veloppeur" }
+};
+var ACTIONS = {
+  "organisation-identity": { role: "organisation", en: "Complete the controller's identity", fr: "Compl\xE9ter l'identit\xE9 du responsable du traitement" },
+  "organisation-dpo": { role: "organisation", en: "Designate a DPO, or state why none is required", fr: "D\xE9signer un DPO, ou indiquer pourquoi aucun n'est requis" },
+  "organisation-representative": { role: "organisation", en: "State whether a representative in the EU is required (Art. 27)", fr: "Indiquer si un repr\xE9sentant dans l'UE est requis (art. 27)" },
+  "joint-controllers": { role: "organisation", en: "List the joint controllers, or state that there are none", fr: "Lister les responsables conjoints, ou indiquer qu'il n'y en a pas" },
+  "personal-data": { role: "developer", en: "Describe the personal data and classify the unknown categories", fr: "D\xE9crire les donn\xE9es personnelles et classer les cat\xE9gories inconnues" },
+  "transfer-safeguards": { role: "developer", en: "Declare the safeguard of each transfer outside the EU", fr: "D\xE9clarer la garantie de chaque transfert hors de l'UE" },
+  "processor-contracts": { role: "organisation", en: "Sign or locate the processor contracts (Art. 28)", fr: "Signer ou retrouver les contrats de sous-traitance (art. 28)" },
+  retention: { role: "dpo", en: "Set the retention periods", fr: "Fixer les dur\xE9es de conservation" },
+  "security-measures": { role: "developer", en: "Describe the security measures", fr: "D\xE9crire les mesures de s\xE9curit\xE9" },
+  "legal-basis-detail": { role: "dpo", en: "Document the legal basis", fr: "Documenter la base l\xE9gale" },
+  dpia: { role: "dpo", en: "Assess whether a DPIA is required, and reference it", fr: "\xC9valuer si une AIPD est requise, et la r\xE9f\xE9rencer" },
+  information: { role: "organisation", en: "State how the persons are informed (Art. 13 and 14)", fr: "Indiquer comment les personnes sont inform\xE9es (art. 13 et 14)" },
+  "sensitive-data": { role: "dpo", en: "Assess the sensitive data (Art. 9)", fr: "\xC9valuer les donn\xE9es sensibles (art. 9)" },
+  "ai-classification": { role: "dpo", en: "Classify the AI features: role and risk level", fr: "Classer les fonctionnalit\xE9s d'IA : r\xF4le et niveau de risque" },
+  "ai-obligations": { role: "developer", en: "Meet or document the AI Act obligations", fr: "Remplir ou documenter les obligations de l'AI Act" },
+  "controller-rationale": { role: "dpo", en: "Explain why the organisation is not the controller", fr: "Expliquer pourquoi l'organisation n'est pas responsable du traitement" }
+};
+var actionLabel = (id, language) => ACTIONS[id][language];
+var roleLabel = (role, language) => ROLES[role][language];
+var plural = (n, language, one, many) => (language === "fr" ? n <= 1 : n === 1) ? one : many;
+function actionsSummary(openItems, actions, language) {
+  if (openItems === 0) return language === "fr" ? "Aucun point ouvert." : "No open item.";
+  if (language === "fr") {
+    return `${openItems} ${plural(openItems, language, "point ouvert", "points ouverts")}, ${plural(openItems, language, "ferm\xE9", "ferm\xE9s")} par ${actions} ${plural(actions, language, "action", "actions")}.`;
+  }
+  return `${openItems} open ${plural(openItems, language, "item", "items")}, closed by ${actions} ${plural(actions, language, "action", "actions")}.`;
+}
+function aiSummary(k, language) {
+  if (language === "fr") return k === 0 ? "Aucune fonctionnalit\xE9 d'IA dans les services des traitements." : `${k} ${plural(k, language, "fonctionnalit\xE9", "fonctionnalit\xE9s")} d'IA dans les services des traitements.`;
+  return k === 0 ? "No AI feature in the services of the processing activities." : `${k} AI ${plural(k, language, "feature", "features")} in the services of the processing activities.`;
+}
+function outsideSummary(k, language) {
+  if (language === "fr") {
+    return k === 0 ? "Tous les services et composants ont l'organisation pour responsable." : `${k} ${plural(k, language, "service", "services")} ou ${plural(k, language, "composant", "composants")} dont le responsable n'est pas l'organisation seule.`;
+  }
+  return k === 0 ? "Every service and component is controlled by the organisation." : `${k} ${plural(k, language, "service", "services")} or ${plural(k, language, "component", "components")} whose controller is not the organisation alone.`;
+}
+var HIGH_RISK = ["art9-risk-management", "art10-data-governance", "art11-technical-documentation", "art12-logging", "art13-transparency", "art14-human-oversight", "art15-accuracy-robustness"];
+function expectedObligations(f) {
+  const out = ["art4-ai-literacy"];
+  if (f.interacts_with_persons === true) out.push("art50-interaction");
+  if (f.generates_content === true) out.push("art50-synthetic-content");
+  if (f.risk?.level === "high") {
+    out.push(...HIGH_RISK);
+    if (f.role === "deployer") out.push("art26-deployer-duties", "art27-fria");
+  }
+  return out;
+}
+var ORGANISATION = "#organisation";
+var AI_FEATURES = "#ai";
+var OUTSIDE = "#outside";
+function buildDossier(complianceDir, generatedAt, language) {
+  const W = WORDS[language];
+  const L = LABELS[language];
+  const TC = W.toComplete;
+  const fill = (value) => isPlaceholder(value) ? TC : value;
+  const root = resolve2(complianceDir);
+  const compliance = readDoc(root, "compliance.yaml", "compliance");
+  if (versionOf(compliance) !== DOSSIER_VERSION) throw new ActionError(`compliance.yaml is spec_version "${compliance.spec_version}": the dossier needs "${DOSSIER_VERSION}".`);
+  const org = compliance.organisation;
+  const repos = compliance.repos;
+  const tools = compliance.declared_tools ?? [];
+  for (const t of tools) {
+    if (repos.some((r) => r.name === t.id)) throw new ActionError(`compliance.yaml: "${t.id}" is both a repo and a declared tool. Rename one. Nothing was generated.`);
+  }
+  const manifests = /* @__PURE__ */ new Map();
+  const loadRepo = (repo, who) => {
+    if (!repos.some((r) => r.name === repo)) throw new ActionError(`${who}: repo "${repo}" is not listed in compliance.yaml.`);
+    if (repo === "." || repo === "..") throw new ActionError(`${who}: "${repo}" is not a repo name.`);
+    const file = `services/${repo}/manifest.yaml`;
+    const known = manifests.get(file);
+    if (known) return known;
+    const doc = readDoc(root, file, "manifest");
+    const sync = readDoc(root, `services/${repo}/sync.yaml`, "sync");
+    const m = { file, doc, repo, sha: sync.sha, sha7: sync.sha.slice(0, 7), label: repo };
+    manifests.set(file, m);
+    return m;
+  };
+  const loadTool = (tool, who) => {
+    const entry = tools.find((t) => t.id === tool);
+    if (!entry) throw new ActionError(`${who}: tool "${tool}" is not listed in declared_tools of compliance.yaml.`);
+    const known = manifests.get(entry.path);
+    if (known) return known;
+    const m = { file: entry.path, doc: readDoc(root, entry.path, "manifest"), label: tool };
+    manifests.set(entry.path, m);
+    return m;
+  };
+  const loadEntry = (e, who) => e.repo !== void 0 ? loadRepo(e.repo, who) : loadTool(e.tool, who);
+  const all = [];
+  for (const r of repos) {
+    if (r.name === "." || r.name === "..") throw new ActionError(`compliance.yaml: "${r.name}" is not a repo name.`);
+    assertNoSymlink(root, "services", r.name);
+    if (existsSync4(join3(root, "services", r.name))) all.push(loadRepo(r.name, "compliance.yaml"));
+  }
+  for (const t of tools) all.push(loadTool(t.id, "compliance.yaml"));
+  const inside = new Set(all.map((m) => m.doc.service.name));
+  const anchors = Object.fromEntries(all.filter((m) => m.repo !== void 0).map((m) => [m.repo, m.sha]).sort(([a], [b]) => cmp(a, b)));
+  const anchorErrors = validateDocument("anchors", { spec_version: DOSSIER_VERSION, generated_at: generatedAt, repos: Object.fromEntries(Object.entries(anchors).map(([k, sha]) => [k, { sha }])) });
+  if (anchorErrors.length > 0) throw new ActionError(`generated_at "${generatedAt}" is not usable: ${anchorErrors[0].instancePath}: ${anchorErrors[0].message}.`);
+  const processings = listDirs(root, "processings").filter((d) => existsNoFollow(join3(root, "processings", d, "processing.yaml"))).map((d) => readDoc(root, `processings/${d}/processing.yaml`, "processing")).sort((a, b) => cmp(a.id, b.id));
+  for (let i = 1; i < processings.length; i++) {
+    if (processings[i].id === processings[i - 1].id) throw new ActionError(`Two processings have the id "${processings[i].id}".`);
+  }
+  const entries = /* @__PURE__ */ new Map();
+  const notices = /* @__PURE__ */ new Map();
+  const referenced = /* @__PURE__ */ new Set();
+  for (const p of processings) {
+    const who = `processings/${p.id}`;
+    entries.set(
+      p,
+      p.services.map((entry) => {
+        const m = loadEntry(entry, who);
+        referenced.add(m);
+        const ids = new Set(m.doc.personal_data.map((d) => d.id));
+        for (const id of entry.data ?? []) {
+          if (!ids.has(id)) throw new ActionError(`${who}: no personal_data "${id}" in ${m.file}.`);
+        }
+        const recipientIds = new Set([...m.doc.processors, ...m.doc.outbound_flows].map((x) => x.id));
+        for (const id of entry.recipients ?? []) {
+          if (!recipientIds.has(id)) throw new ActionError(`${who}: no processor or outbound flow "${id}" in ${m.file}.`);
+        }
+        return { m, scope: entry.data ? new Set(entry.data) : ids, recipients: entry.recipients ? new Set(entry.recipients) : void 0 };
+      })
+    );
+    notices.set(
+      p,
+      (p.information?.notices ?? []).map((ref) => {
+        const m = loadEntry(ref, `${who} (information)`);
+        const notice2 = (m.doc.notices ?? []).find((n) => n.id === ref.id);
+        if (!notice2) throw new ActionError(`${who} (information): no notice "${ref.id}" in ${m.file}.`);
+        return { m, notice: notice2 };
+      })
+    );
+  }
+  const opens = /* @__PURE__ */ new Map();
+  const flag = (place, kind, subject) => {
+    opens.set(`${place}\0${kind}\0${subject}`, { place, kind });
+  };
+  const src = (m, s) => {
+    if (s.kind === "spec") return `spec: ${s.ref}`;
+    if (s.kind === "code" && m.repo !== void 0) return `code: ${m.repo}@${m.sha7}:${s.ref}`;
+    return `declared: ${m.file} (${s.ref})`;
+  };
+  const rowsOf = (item, cands) => cands.map((c, i) => ({ item: i === 0 ? item : "", value: c.value, source: c.source }));
+  const placeholder = (value) => ({ value, source: NO_SOURCE });
+  const orgRow = (value) => value === void 0 ? placeholder(TC) : { value, source: FROM_COMPLIANCE };
+  const oc = org.controller;
+  const orgController = oc ? [oc.legal_name, oc.address, oc.registration, oc.contact].filter((x) => x !== void 0).map(fill).join(", ") : void 0;
+  const orgControllerOpen = !oc || [oc.legal_name, oc.address, oc.registration, oc.contact].some((x) => x !== void 0 && isPlaceholder(x));
+  const od = org.dpo;
+  let orgDpo;
+  let orgDpoOpen = false;
+  if (!od || od.designated === "unknown") orgDpoOpen = true;
+  else if (od.designated === true) {
+    orgDpo = `${fill(od.name)}, ${fill(od.contact)}`;
+    orgDpoOpen = isPlaceholder(od.name) || isPlaceholder(od.contact);
+  } else orgDpo = `${W.notDesignated}: ${od.reason}`;
+  const or = org.representative;
+  let orgRepresentative;
+  if (!or || or.required === "unknown") flag(ORGANISATION, "organisation-representative", "representative");
+  else if (or.required === true) {
+    orgRepresentative = `${fill(or.name)}, ${fill(or.contact)}`;
+    if (isPlaceholder(or.name) || isPlaceholder(or.contact)) flag(ORGANISATION, "organisation-representative", "representative");
+  } else orgRepresentative = or.reason !== void 0 ? `${W.notRequired}: ${or.reason}` : W.notRequired;
+  const privacy = org.privacy_contact;
+  const organisationRows = [
+    ...rowsOf(L.organisation[0], [orgRow(orgController)]),
+    ...rowsOf(L.organisation[1], [orgRow(orgDpo)]),
+    ...rowsOf(L.organisation[2], [orgRow(orgRepresentative)]),
+    ...rowsOf(L.organisation[3], [privacy === void 0 || isPlaceholder(privacy) ? placeholder(TC) : orgRow(privacy)])
+  ];
+  const sections = processings.map((p) => {
+    const place = p.id;
+    const P = `declared: ${p.source.ref}`;
+    const list = entries.get(p);
+    let controller;
+    if (p.controller) {
+      controller = { value: `${fill(p.controller.name)}, ${fill(p.controller.contact)}`, source: P };
+      if (isPlaceholder(p.controller.name) || isPlaceholder(p.controller.contact)) flag(place, "organisation-identity", "controller");
+    } else {
+      controller = orgRow(orgController);
+      if (orgControllerOpen) flag(place, "organisation-identity", "controller");
+    }
+    let joint;
+    const jc = p.joint_controllers;
+    if (jc === void 0) {
+      joint = [placeholder(TC)];
+      flag(place, "joint-controllers", "joint controllers");
+    } else if (jc.length === 0) joint = [{ value: W.none, source: P }];
+    else {
+      joint = jc.map((j) => ({ value: `${fill(j.name)}, ${fill(j.contact)} (${W.arrangement}: ${fill(j.arrangement)})`, source: P })).sort((a, b) => cmp(a.value, b.value));
+      if (jc.some((j) => [j.name, j.contact, j.arrangement].some(isPlaceholder))) flag(place, "joint-controllers", "joint controllers");
+    }
+    let dpo;
+    if (p.dpo) {
+      dpo = { value: `${fill(p.dpo.name)}, ${fill(p.dpo.contact)}`, source: P };
+      if (isPlaceholder(p.dpo.name) || isPlaceholder(p.dpo.contact)) flag(place, "organisation-dpo", "dpo");
+    } else {
+      dpo = orgRow(orgDpo);
+      if (orgDpoOpen) flag(place, "organisation-dpo", "dpo");
+    }
+    const subjects = p.data_subjects.map((value) => ({ value, source: processingSource(p.source) }));
+    const personal = [];
+    const storageRows = [];
+    const procs = [];
+    const flows = [];
+    const seenProcs = /* @__PURE__ */ new Set();
+    for (const { m, scope, recipients } of list) {
+      const d = m.doc;
+      const inScope = (data) => (data ?? []).some((id) => scope.has(id));
+      for (const item of d.personal_data.filter((x) => scope.has(x.id))) {
+        const source = src(m, item.source);
+        for (const s of item.subjects) subjects.push({ value: s, source });
+        const byCategory = /* @__PURE__ */ new Map();
+        for (const f of item.fields) byCategory.set(f.category, (byCategory.get(f.category) ?? /* @__PURE__ */ new Set()).add(f.name));
+        for (const [category, names] of byCategory) {
+          personal.push({ value: `${category}: ${[...names].sort(cmp).join(", ")}`, source });
+          if (category === "unknown") flag(place, "personal-data", "unknown");
+        }
+      }
+      for (const st of d.storage.filter((x) => inScope(x.data))) {
+        storageRows.push({ value: `${st.id} (${st.kind}): ${duration(st.retention)}`, source: src(m, st.source) });
+        if (!p.retention && st.retention.duration === "unknown") flag(place, "retention", `storage ${st.id}`);
+      }
+      const wanted = (x) => recipients ? recipients.has(x.id) : x.data === void 0 || inScope(x.data);
+      const addProc = (pr) => {
+        const key = `${m.file}\0${pr.id}`;
+        if (seenProcs.has(key)) return;
+        seenProcs.add(key);
+        procs.push({ m, pr });
+      };
+      for (const pr of d.processors.filter(wanted)) addProc(pr);
+      for (const fl of d.outbound_flows.filter(wanted)) {
+        const linked = d.processors.find((x) => fl.processor !== void 0 ? x.id === fl.processor : x.name === fl.to.name && x.country === fl.to.country);
+        if (linked) addProc(linked);
+        flows.push({ m, fl, linked });
+      }
+    }
+    const processorValue = (pr) => `${pr.name} (${pr.country}): ${W.dpa} ${pr.dpa}`;
+    const recipientCands = [];
+    const recipientNames = [];
+    for (const { m, pr } of procs) {
+      recipientCands.push({ value: processorValue(pr), source: src(m, pr.source) });
+      recipientNames.push(pr.name);
+    }
+    for (const { m, fl, linked } of flows) {
+      if (linked || inside.has(fl.to.name)) continue;
+      recipientCands.push({ value: `${fl.to.name} (${fl.to.country === "unknown" ? W.countryUnknown : fl.to.country})`, source: src(m, fl.source) });
+      recipientNames.push(fl.to.name);
+    }
+    for (const r of p.recipients ?? []) {
+      if (recipientNames.some((n) => r.name === n || r.name.startsWith(`${n} (`))) continue;
+      recipientCands.push({ value: r.name, source: processingSource(r.source) });
+    }
+    const transferCands = [];
+    const transfer = (name, country2, safeguard, source) => {
+      const unknown2 = country2 === "unknown";
+      const fallback = unknown2 ? W.destinationToAssess : W.safeguardNotDeclared;
+      transferCands.push({ value: `${name} (${unknown2 ? W.countryUnknown : country2}): ${safeguard ?? fallback}`, source });
+      if (safeguard === void 0) flag(place, "transfer-safeguards", `${name} (${country2})`);
+    };
+    for (const { m, pr } of procs) if (pr.transfer_outside_eu === true) transfer(pr.name, pr.country, pr.safeguard, src(m, pr.source));
+    for (const { m, fl, linked: x } of flows) {
+      if (x) {
+        if (x.transfer_outside_eu === true || !EU_EEA.has(x.country)) {
+          transfer(x.name, x.country, fl.safeguard ?? x.safeguard, fl.safeguard !== void 0 ? src(m, fl.source) : src(m, x.source));
+        }
+      } else if (fl.to.country === "unknown" || !EU_EEA.has(fl.to.country)) {
+        transfer(fl.to.name, fl.to.country, fl.safeguard, src(m, fl.source));
+      }
+    }
+    let erasure;
+    if (p.retention) {
+      erasure = [{ value: duration(p.retention), source: processingSource(p.retention.source) }];
+      if (p.retention.duration === "unknown") flag(place, "retention", "processing");
+    } else if (storageRows.length > 0) erasure = composite(storageRows);
+    else {
+      erasure = [placeholder(TC)];
+      flag(place, "retention", "processing");
+    }
+    const security = atomic((p.security_measures ?? []).map((s) => ({ value: s.measure, source: processingSource(s.source) })));
+    if (security.length === 0) flag(place, "security-measures", "processing");
+    const personalRows = composite(personal);
+    if (personalRows.length === 0) flag(place, "personal-data", "To complete");
+    const recipientRows = atomic(recipientCands);
+    const transferRows = atomic(transferCands);
+    const art30 = [
+      [controller],
+      joint,
+      [orgRow(orgRepresentative)],
+      [dpo],
+      [{ value: p.purpose, source: processingSource(p.source) }],
+      atomic(subjects),
+      personalRows.length > 0 ? personalRows : [placeholder(TC)],
+      recipientRows.length > 0 ? recipientRows : [placeholder(W.noneFound)],
+      transferRows.length > 0 ? transferRows : [placeholder(W.noneFound)],
+      erasure,
+      security.length > 0 ? security : [placeholder(TC)]
+    ];
+    const basis = p.legal_basis;
+    const detail = p.legal_basis_detail;
+    let basisDetail;
+    let texts;
+    if (basis === "not-applicable") basisDetail = [placeholder(W.notExpected)];
+    else {
+      const parts = basis === "legitimate-interests" ? detail?.balancing_test && [
+        [W.interest, detail.balancing_test.interest],
+        [W.necessity, detail.balancing_test.necessity],
+        [W.impact, detail.balancing_test.impact],
+        [W.safeguards, detail.balancing_test.safeguards]
+      ] : basis === "consent" ? detail?.consent && [
+        [W.collection, detail.consent.collection],
+        [W.withdrawal, detail.consent.withdrawal]
+      ] : detail?.reference !== void 0 ? [[W.reference, detail.reference]] : void 0;
+      if (parts) {
+        texts = parts.map(([, text]) => text);
+        basisDetail = parts.map(([label, text]) => ({ value: `${label}: ${fill(text)}`, source: P }));
+      } else basisDetail = [placeholder(TC)];
+      if (!texts || texts.some(isPlaceholder)) flag(place, "legal-basis-detail", "processing");
+    }
+    const dpia = p.dpia;
+    let dpiaRow;
+    if (!dpia) {
+      dpiaRow = placeholder(TC);
+      flag(place, "dpia", "processing");
+    } else {
+      let value = `${W.required}: ${dpia.required}`;
+      if (dpia.criteria !== void 0) value += `; ${W.criteria}: ${dpia.criteria.length > 0 ? [...dpia.criteria].sort(cmp).join(", ") : W.none}`;
+      if (dpia.ref !== void 0) value += `; ${W.reference}: ${fill(dpia.ref)}`;
+      else if (dpia.required === "yes") value += `; ${W.reference}: ${TC}`;
+      dpiaRow = { value, source: P };
+      if (dpia.required === "to-assess" || dpia.required === "yes" && (dpia.ref === void 0 || isPlaceholder(dpia.ref))) flag(place, "dpia", "processing");
+    }
+    let information;
+    if (!p.information) {
+      information = [placeholder(TC)];
+      flag(place, "information", "processing");
+    } else {
+      information = atomic(
+        notices.get(p).map(({ m, notice: notice2 }) => {
+          if (notice2.kind === "none") flag(place, "information", `${m.label}/${notice2.id}`);
+          return { value: `${notice2.kind}: ${notice2.ref} (${m.label})`, source: src(m, notice2.source) };
+        })
+      );
+      if (p.information.text !== void 0) information.push({ value: p.information.text, source: P });
+    }
+    const sensitive = p.sensitive_data;
+    let sensitiveRow;
+    if (sensitive === void 0) sensitiveRow = placeholder(TC);
+    else sensitiveRow = { value: typeof sensitive === "string" ? sensitive : [...sensitive].sort(cmp).join(", "), source: P };
+    if (sensitive === void 0 || sensitive === "to-assess") flag(place, "sensitive-data", "processing");
+    const contracts = atomic(
+      procs.map(({ m, pr }) => {
+        if (pr.dpa === "no" || pr.dpa === "unknown") flag(place, "processor-contracts", `${pr.name} (${pr.country})`);
+        return { value: `${processorValue(pr)}${pr.dpa_ref !== void 0 ? ` (${pr.dpa_ref})` : ""}`, source: src(m, pr.source) };
+      })
+    );
+    const checks = [
+      [{ value: basis, source: P }],
+      basisDetail,
+      [dpiaRow],
+      information,
+      [sensitiveRow],
+      contracts.length > 0 ? contracts : [placeholder(W.noneFound)]
+    ];
+    return {
+      id: p.id,
+      name: p.name,
+      rows: art30.flatMap((cands, i) => rowsOf(L.art30[i], cands)),
+      checks: checks.flatMap((cands, i) => rowsOf(L.checks[i], cands))
+    };
+  });
+  const aiRows = [...referenced].flatMap(
+    (m) => (m.doc.ai_features ?? []).map((f) => {
+      const subject = `${m.label}/${f.id}`;
+      if (f.role === void 0 || f.role === "to-assess") flag(AI_FEATURES, "ai-classification", `${subject} role`);
+      if (f.risk === void 0 || f.risk.level === "to-assess" || f.risk.level === "prohibited") flag(AI_FEATURES, "ai-classification", `${subject} risk`);
+      const listed = f.obligations ?? [];
+      const obligations = listed.map((o) => {
+        if (o.status === "open") flag(AI_FEATURES, "ai-obligations", `${subject} ${o.id}`);
+        return { id: o.id, text: `${o.id}: ${o.status}${o.ref !== void 0 ? ` (${o.ref})` : ""}` };
+      });
+      for (const id of expectedObligations(f)) {
+        if (listed.some((o) => o.id === id)) continue;
+        flag(AI_FEATURES, "ai-obligations", `${subject} ${id}`);
+        obligations.push({ id, text: `${id}: ${TC}` });
+      }
+      return {
+        service: m.label,
+        id: f.id,
+        feature: `${f.id}: ${f.description}`,
+        role: f.role ?? TC,
+        risk: f.risk ? f.risk.reason !== void 0 ? `${f.risk.level}: ${f.risk.reason}` : f.risk.level : TC,
+        obligations: obligations.sort((a, b) => cmp(a.id, b.id)).map((o) => o.text).join("; "),
+        source: src(m, f.source)
+      };
+    })
+  ).sort((a, b) => cmp(a.service, b.service) || cmp(a.id, b.id));
+  const outsideRows = [];
+  for (const m of all) {
+    const s = m.doc.service;
+    const components = s.components ?? [];
+    const items = m.doc.personal_data;
+    const row = (service, controller, data) => {
+      if (s.controller_rationale === void 0) flag(OUTSIDE, "controller-rationale", m.label);
+      const pd = [...data].sort((a, b) => cmp(a.id, b.id)).map((d) => `${d.id} (${[...new Set(d.fields.map((f) => f.category))].sort(cmp).join(", ")})`);
+      outsideRows.push({
+        service,
+        controller,
+        rationale: s.controller_rationale ?? TC,
+        privacy_by_design: s.privacy_by_design ? [...s.privacy_by_design].sort(cmp).join("; ") : W.noneFound,
+        personal_data: pd.length > 0 ? pd.join("; ") : W.noneFound,
+        source: src(m, s.source)
+      });
+    };
+    if (s.controller !== "organisation") {
+      const own = new Set(components.filter((c) => c.controller === void 0 || c.controller === s.controller).map((c) => c.id));
+      row(m.label, s.controller, items.filter((d) => d.component === void 0 || own.has(d.component)));
+    }
+    for (const c of components) {
+      if (c.controller === void 0 || c.controller === "organisation" || c.controller === s.controller) continue;
+      row(`${m.label}/${c.id}`, c.controller, items.filter((d) => d.component === c.id));
+    }
+  }
+  outsideRows.sort((a, b) => cmp(a.service, b.service));
+  const order = [ORGANISATION, ...processings.map((p) => p.id), AI_FEATURES, OUTSIDE];
+  const placeLabel = (place) => place === ORGANISATION ? L.places.organisation : place === AI_FEATURES ? L.places.ai : place === OUTSIDE ? L.places.outside : place;
+  const byKind = /* @__PURE__ */ new Map();
+  for (const { place, kind } of opens.values()) {
+    const a = byKind.get(kind) ?? { count: 0, places: /* @__PURE__ */ new Set() };
+    a.count += 1;
+    a.places.add(place);
+    byKind.set(kind, a);
+  }
+  const actions = [...byKind].map(([id, a]) => ({ id, role: ACTIONS[id].role, count: a.count, places: order.filter((pl) => a.places.has(pl)) })).sort((a, b) => ROLES[a.role].order - ROLES[b.role].order || b.count - a.count || cmp(a.id, b.id));
+  const openItems = opens.size;
+  const escape2 = (rows) => rows.map((r) => ({ item: cell(r.item), value: cell(r.value), source: cell(r.source) }));
+  let template = readFileSync4(TEMPLATES[language], "utf8");
+  if (Object.keys(anchors).length === 0) template = template.replace(/^anchors:\n\{\{#each anchors\}\}\n[\s\S]*?\{\{\/each\}\}\n/m, "anchors: {}\n");
+  const markdown = renderTemplate(template, {
+    spec_version: DOSSIER_VERSION,
+    language,
+    generated_at: generatedAt,
+    open_items: String(openItems),
+    action_count: String(actions.length),
+    anchors: Object.entries(anchors).map(([repo, sha]) => ({ repo, sha })),
+    organisation: cell(org.name),
+    organisation_rows: escape2(organisationRows),
+    actions_summary: actionsSummary(openItems, actions.length, language),
+    actions: actions.map((a) => ({ id: a.id, label: cell(ACTIONS[a.id][language]), role: cell(ROLES[a.role][language]), count: String(a.count), where: cell(a.places.map(placeLabel).join(", ")) })),
+    processings: sections.map((x) => ({ id: cell(x.id), name: cell(x.name), rows: escape2(x.rows), checks: escape2(x.checks) })),
+    ai_summary: aiSummary(aiRows.length, language),
+    ai_features: aiRows.map((r) => ({ service: cell(r.service), feature: cell(r.feature), role: cell(r.role), risk: cell(r.risk), obligations: cell(r.obligations), source: cell(r.source) })),
+    outside_summary: outsideSummary(outsideRows.length, language),
+    outside: outsideRows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, cell(v)])))
+  });
+  return { markdown, anchors, openItems, actions: actions.map(({ id, role, count }) => ({ id, role, count })) };
+}
+
+// src/register.ts
 var REGISTER_BRANCH = "compliance/register";
 var REGISTER_TITLE = "compliance: update the records of processing";
 var TEMPLATE_URL = new URL("../templates/register/register.md.tmpl", import.meta.url);
+var REGISTER_VERSION = "0.1";
 var EU_EEA = new Set("AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IS IT LV LI LT LU MT NL NO PL PT RO SK SI ES SE".split(" "));
 var TO_COMPLETE = "To complete";
 var NONE_IDENTIFIED = "None identified in the sources";
-var NO_SOURCE = "\u2014";
+var NO_SOURCE2 = "\u2014";
 var NOT_COUNTED = /* @__PURE__ */ new Set(["(a) Joint controller", "(a) Representative"]);
 var isPlaceholder = (value) => /^to complete$/i.test(value.trim());
 var filled = (value) => isPlaceholder(value) ? TO_COMPLETE : value;
@@ -40999,7 +42187,7 @@ function readDoc(root, rel, schema) {
   assertNoSymlink(root, ...parts);
   let text;
   try {
-    text = readFileSync4(join3(root, ...parts), "utf8");
+    text = readFileSync5(join4(root, ...parts), "utf8");
   } catch {
     throw new ActionError(`${rel} not found (or not readable). Nothing was generated.`);
   }
@@ -41007,15 +42195,27 @@ function readDoc(root, rel, schema) {
   if (errors.length > 0) throw new ActionError(`${rel} is invalid: ${errors[0].instancePath}: ${errors[0].message}${errors.length > 1 ? ` (and ${errors.length - 1} more)` : ""}. Nothing was generated.`);
   return doc;
 }
+function existsNoFollow(path) {
+  try {
+    lstatSync2(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
 function listDirs(root, rel) {
   assertNoSymlink(root, rel);
-  const dir = join3(root, rel);
-  if (!existsSync4(dir)) return [];
-  return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(cmp);
+  const dir = join4(root, rel);
+  if (!existsSync5(dir)) return [];
+  const entries = readdirSync(dir, { withFileTypes: true });
+  const link = entries.find((e) => e.isSymbolicLink());
+  if (link) throw new ActionError(`${rel}/${link.name} is a symbolic link: refused, so that nothing is silently left out. Nothing was generated.`);
+  return entries.filter((e) => e.isDirectory()).map((e) => e.name).sort(cmp);
 }
 function buildRegister(complianceDir, generatedAt) {
-  const root = resolve2(complianceDir);
+  const root = resolve3(complianceDir);
   const compliance = readDoc(root, "compliance.yaml", "compliance");
+  if (versionOf(compliance) !== REGISTER_VERSION) throw new ActionError(`compliance.yaml is spec_version "${compliance.spec_version}": use buildDossier.`);
   const manifests = /* @__PURE__ */ new Map();
   const load = (repo, tool, who) => {
     let file;
@@ -41030,6 +42230,7 @@ function buildRegister(complianceDir, generatedAt) {
     const known = manifests.get(file);
     if (known) return known;
     const doc = readDoc(root, file, "manifest");
+    if (versionOf(doc) !== REGISTER_VERSION) throw new ActionError(`${file} is spec_version "${doc.spec_version}" but compliance.yaml is "${REGISTER_VERSION}": its v0.2 fields would be ignored. Upgrade compliance.yaml to "0.2". Nothing was generated.`);
     const m = { file, doc };
     if (repo !== void 0) {
       const sync = readDoc(root, `services/${repo}/sync.yaml`, "sync");
@@ -41038,7 +42239,11 @@ function buildRegister(complianceDir, generatedAt) {
     manifests.set(file, m);
     return m;
   };
-  const processings = listDirs(root, "processings").filter((d) => existsSync4(join3(root, "processings", d, "processing.yaml"))).map((d) => readDoc(root, `processings/${d}/processing.yaml`, "processing")).sort((a, b) => cmp(a.id, b.id));
+  const processings = listDirs(root, "processings").filter((d) => existsNoFollow(join4(root, "processings", d, "processing.yaml"))).map((d) => {
+    const doc = readDoc(root, `processings/${d}/processing.yaml`, "processing");
+    if (versionOf(doc) !== REGISTER_VERSION) throw new ActionError(`processings/${d}/processing.yaml is spec_version "${doc.spec_version}" but compliance.yaml is "${REGISTER_VERSION}": upgrade compliance.yaml to "0.2". Nothing was generated.`);
+    return doc;
+  }).sort((a, b) => cmp(a.id, b.id));
   for (let i = 1; i < processings.length; i++) {
     if (processings[i].id === processings[i - 1].id) throw new ActionError(`Two processings have the id "${processings[i].id}".`);
   }
@@ -41066,17 +42271,17 @@ function buildRegister(complianceDir, generatedAt) {
   }
   const inside = /* @__PURE__ */ new Set();
   for (const r of compliance.repos) {
-    if (existsSync4(join3(root, "services", r.name, "manifest.yaml"))) inside.add(load(r.name, void 0, "compliance.yaml").doc.service.name);
+    if (existsSync5(join4(root, "services", r.name, "manifest.yaml"))) inside.add(load(r.name, void 0, "compliance.yaml").doc.service.name);
   }
   for (const t of compliance.declared_tools ?? []) {
-    if (existsSync4(join3(root, t.path))) inside.add(load(void 0, t.id, "compliance.yaml").doc.service.name);
+    if (existsSync5(join4(root, t.path))) inside.add(load(void 0, t.id, "compliance.yaml").doc.service.name);
   }
   const anchors = {};
   for (const list of resolved.values()) {
     for (const { m } of list) if (m.repo !== void 0) anchors[m.repo] = m.sha;
   }
   const sortedAnchors = Object.fromEntries(Object.entries(anchors).sort(([a], [b]) => cmp(a, b)));
-  const check = validateDocument("anchors", { spec_version: SPEC_VERSION, generated_at: generatedAt, repos: Object.fromEntries(Object.entries(sortedAnchors).map(([k, sha]) => [k, { sha }])) });
+  const check = validateDocument("anchors", { spec_version: REGISTER_VERSION, generated_at: generatedAt, repos: Object.fromEntries(Object.entries(sortedAnchors).map(([k, sha]) => [k, { sha }])) });
   if (check.length > 0) throw new ActionError(`generated_at "${generatedAt}" is not usable: ${check[0].instancePath}: ${check[0].message}.`);
   const sections = processings.map((p) => {
     const list = resolved.get(p);
@@ -41153,7 +42358,7 @@ function buildRegister(complianceDir, generatedAt) {
       if (!open3.includes(item)) open3.push(item);
     };
     const add = (item, cands, empty) => {
-      const all = cands.length > 0 ? cands : [{ value: empty ?? TO_COMPLETE, source: NO_SOURCE }];
+      const all = cands.length > 0 ? cands : [{ value: empty ?? TO_COMPLETE, source: NO_SOURCE2 }];
       all.forEach((c, i) => {
         rows.push({ item: i === 0 ? item : "", value: c.value, source: c.source });
         if (NOT_COUNTED.has(item)) return;
@@ -41184,12 +42389,12 @@ function buildRegister(complianceDir, generatedAt) {
       open: { id: p.id, name: p.name, items: open3 }
     };
   });
-  let template = readFileSync4(TEMPLATE_URL, "utf8");
+  let template = readFileSync5(TEMPLATE_URL, "utf8");
   if (Object.keys(sortedAnchors).length === 0) template = template.replace(/^anchors:\n\{\{#each anchors\}\}\n[\s\S]*?\{\{\/each\}\}\n/m, "anchors: {}\n");
   const open2 = sections.map((x) => x.open);
   const count = open2.reduce((n, x) => n + x.items.length, 0);
   const markdown = renderTemplate(template, {
-    spec_version: SPEC_VERSION,
+    spec_version: REGISTER_VERSION,
     generated_at: generatedAt,
     open_items: String(count),
     open_summary: openSummary(count, open2.filter((x) => x.items.length > 0).length, open2.length),
@@ -41200,37 +42405,69 @@ function buildRegister(complianceDir, generatedAt) {
   });
   return { markdown, anchors: sortedAnchors, open: open2 };
 }
-function anchorsYaml(anchors, generatedAt) {
+function anchorsYaml(anchors, generatedAt, specVersion = REGISTER_VERSION) {
   const doc = {
-    spec_version: SPEC_VERSION,
+    spec_version: specVersion,
     generated_at: generatedAt,
     repos: Object.fromEntries(Object.entries(anchors).map(([repo, sha]) => [repo, { sha }]))
   };
   return (0, import_yaml6.stringify)(doc, { defaultStringType: "QUOTE_DOUBLE", defaultKeyType: "PLAIN" });
 }
 function previousGeneratedAt(root) {
-  const path = join3(root, "anchors.yaml");
-  if (!existsSync4(path)) return null;
+  const path = join4(root, "anchors.yaml");
+  if (!existsSync5(path)) return null;
   try {
-    const doc = parseStrict(readFileSync4(path, "utf8"));
+    const doc = parseStrict(readFileSync5(path, "utf8"));
     if (validateDocument("anchors", doc).length > 0) return null;
     return doc.generated_at;
   } catch {
     return null;
   }
 }
-function isUpToDate(root, previous) {
-  const registerPath = join3(root, "documents", "register.md");
-  if (!existsSync4(registerPath)) return false;
-  const same = buildRegister(root, previous);
-  return readFileSync4(registerPath, "utf8") === same.markdown && readFileSync4(join3(root, "anchors.yaml"), "utf8") === anchorsYaml(same.anchors, previous);
+function generate(root, generatedAt, language) {
+  const compliance = readDoc(root, "compliance.yaml", "compliance");
+  if (versionOf(compliance) === REGISTER_VERSION) {
+    const { markdown, anchors, open: open2 } = buildRegister(root, generatedAt);
+    return {
+      markdown,
+      anchors,
+      specVersion: REGISTER_VERSION,
+      what: "Records of processing activities (GDPR Art. 30(1)) generated from the compliance repo.",
+      openLines: [
+        `- Open items: ${openSummary(open2.reduce((n, x) => n + x.items.length, 0), open2.filter((x) => x.items.length > 0).length, open2.length)}`,
+        ...open2.filter((x) => x.items.length > 0).map((x) => `  - ${codeSpan(`${x.name} (${x.id})`)}: ${x.items.map(codeSpan).join(", ")}`)
+      ],
+      howToRead: "Open items are listed first in the register: rows marked `To complete` have no source and need a person, and joint controller and representative are always to confirm by hand."
+    };
+  }
+  const d = buildDossier(root, generatedAt, language);
+  return {
+    markdown: d.markdown,
+    anchors: d.anchors,
+    specVersion: "0.2",
+    what: `Compliance dossier (organisation, actions, records of processing under GDPR Art. 30(1), DPO checks, AI features) generated from the compliance repo, in ${language === "fr" ? "French" : "English"}.`,
+    // The pull request body is in English, whatever the language of the dossier.
+    openLines: [
+      `- Open items: ${actionsSummary(d.openItems, d.actions.length, "en")}`,
+      ...d.actions.map((a) => `  - ${codeSpan(a.id)}: ${codeSpan(actionLabel(a.id, "en"))} (${codeSpan(roleLabel(a.role, "en"))}, ${a.count})`)
+    ],
+    howToRead: "The actions that close the open items are listed first in the dossier: rows marked `To complete` have no source and need a person."
+  };
+}
+function isUpToDate(root, previous, language) {
+  const registerPath = join4(root, "documents", "register.md");
+  if (!existsSync5(registerPath)) return false;
+  const same = generate(root, previous, language);
+  return readFileSync5(registerPath, "utf8") === same.markdown && readFileSync5(join4(root, "anchors.yaml"), "utf8") === anchorsYaml(same.anchors, previous, same.specVersion);
 }
 async function runRegister(o) {
   const git = o.git ?? runGit;
-  const root = resolve2(o.compliancePath);
+  const root = resolve3(o.compliancePath);
   const branch = REGISTER_BRANCH;
   const base = o.baseBranch;
   const repo = o.ctx.repo;
+  const language = o.language || "en";
+  if (!LANGUAGES.includes(language)) throw new ActionError(`Unknown language "${o.language}". Use ${LANGUAGES.join(" or ")}.`);
   const remoteEnv = remoteAuthEnv(o.token);
   const { existing, remoteSha } = await guardBotBranch({ git, api: o.api, root, repo, branch, base, remoteEnv });
   await mustGit(git, ["checkout", "-B", branch, `origin/${base}`], root);
@@ -41238,15 +42475,16 @@ async function runRegister(o) {
   assertNoSymlink(root, "documents", "register.md");
   assertNoSymlink(root, "anchors.yaml");
   const previous = previousGeneratedAt(root);
-  if (previous && isUpToDate(root, previous)) {
+  if (previous && isUpToDate(root, previous, language)) {
     notice(`The register and anchors.yaml are already up to date with origin/${base}: nothing to commit.`);
     return;
   }
   const generatedAt = o.generatedAt || await mustGit(git, ["log", "-1", "--format=%cI"], root);
-  const { markdown, anchors, open: open2 } = buildRegister(root, generatedAt);
-  mkdirSync2(join3(root, "documents"), { recursive: true });
-  writeNoFollow(join3(root, "documents", "register.md"), markdown);
-  writeNoFollow(join3(root, "anchors.yaml"), anchorsYaml(anchors, generatedAt));
+  const { markdown, anchors, specVersion, what, openLines, howToRead } = generate(root, generatedAt, language);
+  if (specVersion === REGISTER_VERSION && language !== "en") info(`compliance.yaml is spec_version "${REGISTER_VERSION}": the register is in English, language "${language}" applies to a v0.2 dossier only.`);
+  mkdirSync2(join4(root, "documents"), { recursive: true });
+  writeNoFollow(join4(root, "documents", "register.md"), markdown);
+  writeNoFollow(join4(root, "anchors.yaml"), anchorsYaml(anchors, generatedAt, specVersion));
   await mustGit(git, ["add", "--", "documents/register.md", "anchors.yaml"], root);
   const staged = await git(["diff", "--cached", "--quiet"], root);
   if (staged.code === 0) {
@@ -41254,14 +42492,13 @@ async function runRegister(o) {
     return;
   }
   const body = [
-    "Records of processing activities (GDPR Art. 30(1)) generated from the compliance repo.",
+    what,
     "",
     `- Generated at: \`${generatedAt}\``,
     `- Repos documented: ${Object.keys(anchors).length > 0 ? Object.entries(anchors).map(([r, sha]) => `\`${r}\` at \`${sha.slice(0, 7)}\``).join(", ") : "none"}`,
-    `- Open items: ${openSummary(open2.reduce((n, x) => n + x.items.length, 0), open2.filter((x) => x.items.length > 0).length, open2.length)}`,
-    ...open2.filter((x) => x.items.length > 0).map((x) => `  - ${codeSpan(`${x.name} (${x.id})`)}: ${x.items.map(codeSpan).join(", ")}`),
+    ...openLines,
     "",
-    "This document is prepared for review by the controller and its data protection officer. It does not certify compliance with the GDPR. Open items are listed first in the register: rows marked `To complete` have no source and need a person, and joint controller and representative are always to confirm by hand.",
+    `This document is prepared for review by the controller and its data protection officer. It does not certify compliance with the GDPR${specVersion === REGISTER_VERSION ? "" : " or the AI Act"}. ${howToRead}`,
     "",
     "Merging this pull request records `anchors.yaml`: the lag of each service then restarts from 0. Written by compliance-action; do not edit `documents/register.md` or `anchors.yaml` by hand."
   ].join("\n");
@@ -41327,6 +42564,7 @@ async function run() {
         baseBranch: baseBranch(ctx),
         token,
         generatedAt: getInput("generated-at") || void 0,
+        language: getInput("language") || "en",
         ctx,
         api: createApi(token)
       });

@@ -1,15 +1,29 @@
 {
-  "spec_version": "0.1",
-  "source": "C2-POLY/compliance-spec",
-  "commit": "bc9351ce99b17c82c114ff85ed4569b5323db219",
-  "files": [
-    "anchors.schema.json",
-    "compliance.schema.json",
-    "manifest.schema.json",
-    "processing.schema.json",
-    "sync.schema.json"
+  "spec_versions": [
+    "0.1",
+    "0.2"
   ],
+  "source": "C2-POLY/compliance-spec",
+  "commit": "df6514dad96757e34e300b54182d3e8ef94ada26",
+  "schemas": {
+    "0.1": [
+      "anchors.schema.json",
+      "compliance.schema.json",
+      "manifest.schema.json",
+      "processing.schema.json",
+      "sync.schema.json"
+    ],
+    "0.2": [
+      "anchors.schema.json",
+      "compliance.schema.json",
+      "manifest.schema.json",
+      "processing.schema.json",
+      "sync.schema.json"
+    ]
+  },
   "templates": [
-    "register/register.md.tmpl"
+    "register/register.md.tmpl",
+    "register/register.en.md.tmpl",
+    "register/register.fr.md.tmpl"
   ]
 }

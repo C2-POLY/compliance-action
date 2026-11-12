@@ -1,0 +1,23 @@
+# expect: /ai_features/0/obligations/1/id uniqueId
+spec_version: "0.2"
+service: {name: Bistro Booking API, description: Booking API., controller: organisation, source: {kind: declared, ref: README.md}}
+personal_data:
+  - id: guest-contact
+    subjects: [restaurant guests]
+    fields:
+      - {name: guest email, category: contact}
+    purpose: confirm bookings
+    source: {kind: code, ref: "src/bookings/guest.ts"}
+storage: []
+processors: []
+outbound_flows: []
+automated_decisions: []
+ai_features:
+  - id: booking-assistant
+    description: A chat assistant answers guests' questions.
+    generates_content: true
+    interacts_with_persons: true
+    human_review: false
+    obligations:
+      - {id: art4-ai-literacy, status: done}
+      - {id: art4-ai-literacy, status: open}

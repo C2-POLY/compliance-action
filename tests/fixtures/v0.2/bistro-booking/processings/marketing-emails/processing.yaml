@@ -1,0 +1,19 @@
+spec_version: "0.2"
+id: marketing-emails
+name: Marketing emails
+purpose: Send the monthly newsletter and special offers to guests who subscribed.
+controller: {name: Bistro Booking Group, contact: newsletter@bistro-booking.example}
+data_subjects: [guests who subscribed to the newsletter]
+legal_basis: consent
+dpia:
+  required: to-assess
+sensitive_data: to-assess
+services:
+  - tool: crm
+    data: [newsletter-contacts]
+  - repo: bistro-api
+    data: [guest-contact]
+    recipients: []
+recipients:
+  - {name: ClientDesk CRM (campaigns), source: {kind: declared, ref: "declared/crm/manifest.yaml"}}
+source: {kind: declared, ref: "marketing team"}

@@ -1,0 +1,126 @@
+spec_version: "0.2"
+
+service:
+  name: Bistro Booking Web
+  repo: bistro-org/bistro-web
+  description: Booking website of Bistro Booking, the frontend that guests use to book a table, and its installable offline app.
+  controller: organisation
+  controller_rationale: "The offline app keeps the guest's favourite restaurants and private notes on the guest's device only. Nothing is sent to Bistro Booking, which cannot read them: the guest decides what to write and when to delete it."
+  privacy_by_design:
+    - Favourites and notes of the offline app never leave the device
+    - The offline app works without an account
+    - Page views are sent only after the visitor has consented
+  components:
+    - {id: site, kind: frontend}
+    - {id: offline-app, kind: progressive-web-app, controller: user-of-the-app}
+  source: {kind: declared, ref: "README.md"}
+
+personal_data:
+  - id: booking-form
+    component: site
+    subjects: [restaurant guests]
+    fields:
+      - {name: guest name, category: identity}
+      - {name: guest email, category: contact}
+      - {name: guest phone number, category: contact}
+      - {name: dietary notes (free text), category: special}
+    purpose: collect the data of a table booking and send it to the booking API
+    legal_basis: contract
+    source: {kind: code, ref: "src/components/BookingForm.tsx"}
+    linked_files: ["src/components/BookingForm.tsx"]
+
+  - id: visit-statistics
+    component: site
+    subjects: [visitors of the website]
+    fields:
+      - {name: pseudonymous visitor id, category: usage}
+      - {name: pages viewed, category: usage}
+    purpose: measure which pages are used
+    legal_basis: consent
+    source: {kind: code, ref: "src/analytics/beacon.ts"}
+    linked_files: ["src/analytics/**"]
+
+  - id: guest-notes
+    component: offline-app
+    subjects: [guests who use the offline app]
+    fields:
+      - {name: favourite restaurants, category: usage}
+      - {name: private notes about visits (free text), category: unknown}
+    purpose: let guests keep their own favourites and notes on their device
+    legal_basis: not-applicable
+    source: {kind: code, ref: "src/offline/notes.ts"}
+    linked_files: ["src/offline/**"]
+
+storage:
+  - id: booking-draft
+    component: site
+    kind: browser
+    location: sessionStorage of the guest's browser
+    data: [booking-form]
+    retention: {duration: session, trigger: the browser tab is closed}
+    source: {kind: code, ref: "src/components/BookingForm.tsx"}
+
+  - id: consent-cookie
+    component: site
+    kind: browser
+    location: first-party cookie in the visitor's browser
+    data: [visit-statistics]
+    retention: {duration: P6M, trigger: expiry of the cookie}
+    source: {kind: code, ref: "src/analytics/consent.ts"}
+
+  - id: device-notes
+    component: offline-app
+    kind: browser
+    location: IndexedDB of the guest's device
+    data: [guest-notes]
+    retention: {duration: none, trigger: the guest deletes the note or uninstalls the app}
+    source: {kind: code, ref: "src/offline/notes.ts"}
+
+processors:
+  - id: pagestats
+    component: site
+    name: PageStats
+    service: website audience measurement
+    country: DE
+    dpa: "yes"
+    dpa_ref: "PageStats data processing terms, signed 2026-01-15"
+    transfer_outside_eu: false
+    data: [visit-statistics]
+    source: {kind: code, ref: "src/analytics/beacon.ts"}
+
+outbound_flows:
+  - id: submit-booking
+    component: site
+    to: {name: Bistro Booking API, country: FR}
+    data: [booking-form]
+    purpose: create the booking
+    account: none
+    source: {kind: code, ref: "src/api/client.ts"}
+
+  - id: analytics-beacon
+    component: site
+    to: {name: PageStats, country: DE}
+    data: [visit-statistics]
+    purpose: send page views once the visitor has consented
+    account: organisation
+    processor: pagestats
+    source: {kind: code, ref: "src/analytics/beacon.ts"}
+
+automated_decisions: []
+
+ai_features: []
+
+notices:
+  - id: privacy-page
+    component: site
+    kind: page
+    ref: https://bistro-booking.example/privacy
+    source: {kind: code, ref: "src/pages/privacy.tsx"}
+    linked_files: ["src/pages/privacy.tsx"]
+
+linked_files:
+  - "src/components/BookingForm.tsx"
+  - "src/analytics/**"
+  - "src/api/**"
+  - "src/offline/**"
+  - "src/pages/privacy.tsx"

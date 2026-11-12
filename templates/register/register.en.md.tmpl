@@ -1,0 +1,82 @@
+---
+spec_version: "{{spec_version}}"
+language: {{language}}
+generated_at: "{{generated_at}}"
+open_items: {{open_items}}
+actions: {{action_count}}
+anchors:
+{{#each anchors}}
+  {{repo}}: "{{sha}}"
+{{/each}}
+---
+
+# Compliance dossier
+
+- Organisation: {{organisation}}
+- Generated at: {{generated_at}}
+
+Compliance dossier of the organisation, built from its compliance repo: the organisation's identity, the actions that close the open items, then for each processing activity its records of processing (GDPR Art. 30(1)) and its DPO checks, the AI features, and what stays outside the register. The Source column says where each value comes from; `To complete` means that no source gives the value and a person has to fill it in. How this document is built: `templates/register/README.md` in the compliance-spec repository.
+
+> Prepared for review by the controller and its data protection officer. This document does not certify compliance with the GDPR or the AI Act.
+
+## Organisation
+
+| Item | Value | Source |
+| --- | --- | --- |
+{{#each organisation_rows}}
+| {{item}} | {{value}} | {{source}} |
+{{/each}}
+
+## Actions
+
+{{actions_summary}}
+
+| Action | Role | Open items closed | Where |
+| --- | --- | --- | --- |
+{{#each actions}}
+| `{{id}}`: {{label}} | {{role}} | {{count}} | {{where}} |
+{{/each}}
+
+{{#each processings}}
+## {{name}} ({{id}})
+
+### Records of processing, GDPR Art. 30(1)
+
+| Item | Value | Source |
+| --- | --- | --- |
+{{#each rows}}
+| {{item}} | {{value}} | {{source}} |
+{{/each}}
+
+### DPO checks
+
+| Check | Value | Source |
+| --- | --- | --- |
+{{#each checks}}
+| {{item}} | {{value}} | {{source}} |
+{{/each}}
+
+{{/each}}
+## AI features
+
+{{ai_summary}}
+
+| Service | Feature | Role | Risk | Obligations | Source |
+| --- | --- | --- | --- | --- | --- |
+{{#each ai_features}}
+| {{service}} | {{feature}} | {{role}} | {{risk}} | {{obligations}} | {{source}} |
+{{/each}}
+
+## Outside the register
+
+{{outside_summary}}
+
+| Service | Controller | Rationale | Privacy by design | Personal data | Source |
+| --- | --- | --- | --- | --- | --- |
+{{#each outside}}
+| {{service}} | {{controller}} | {{rationale}} | {{privacy_by_design}} | {{personal_data}} | {{source}} |
+{{/each}}
+
+## Not covered
+
+This dossier prepares a review; it does not certify compliance with the GDPR or the AI Act. It holds the references of the data protection impact assessments, not the assessments themselves, and it shows only what the sources state: a processing activity, a repo or a tool missing from the compliance repo is missing from the dossier.

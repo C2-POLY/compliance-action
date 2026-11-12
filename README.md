@@ -2,7 +2,7 @@
 
 A GitHub Action that keeps a repo's compliance manifest in step with its code. It checks `.compliance/manifest.yaml` on pull requests, and on every merge sends the manifest and the commit SHA to the organisation's compliance repo, together with how far the documents lag behind the code.
 
-The format of the manifest and of the compliance repo is defined in [compliance-spec](https://github.com/C2-POLY/compliance-spec) (v0.1). The schemas used here are copied from it into `schemas/`, see [Development](#development).
+The format of the manifest and of the compliance repo is defined in [compliance-spec](https://github.com/C2-POLY/compliance-spec) (v0.1 and v0.2). The schemas used here are copied from it into `schemas/`, see [Development](#development). Each file is validated against the schema of its own `spec_version`, so a v0.2 compliance repo can hold the v0.1 manifests of the repos that have not upgraded yet.
 
 ## How it fits together
 
@@ -127,7 +127,12 @@ This needs a token that can read the service repos (Contents: read on them), so 
 
 ## Generate the register
 
-The `register` mode runs in the compliance repo. It reads `compliance.yaml`, `processings/*/processing.yaml`, `services/<repo>/{manifest,sync}.yaml` and `declared/<tool>/manifest.yaml` (strict YAML, validated against the vendored v0.1 schemas) and writes the records of processing activities (GDPR Art. 30(1)) to `documents/register.md`, plus `anchors.yaml`. Then it resets the branch `compliance/register` from the base branch, commits as `compliance-action`, pushes it and opens a pull request `compliance: update the records of processing`, or updates the open one.
+The `register` mode runs in the compliance repo. It reads `compliance.yaml`, `processings/*/processing.yaml`, `services/<repo>/{manifest,sync}.yaml` and `declared/<tool>/manifest.yaml` (strict YAML, each file validated against the vendored schema of its `spec_version`) and writes `documents/register.md`, plus `anchors.yaml`. What it writes depends on the `spec_version` of `compliance.yaml`:
+
+- **`"0.1"`: the records of processing activities** (GDPR Art. 30(1)), in English, exactly as before.
+- **`"0.2"`: the compliance dossier**, in English or French (input `language`, `en` by default; the path is `documents/register.md` either way). In order: the organisation's identity (controller, DPO, representative, privacy contact, from `compliance.yaml`), the **actions** that close the open items (one row per action with its role, `Organisation`, `DPO` or `Developer`, its count and where it applies), then for each processing activity its records of processing (Art. 30(1)) and its DPO checks (legal basis and its detail, DPIA, information of persons, sensitive data, processor contracts), the AI features of the services the processings use with their AI Act role, risk and obligations, and **Outside the register**: the services and components whose controller is not the organisation. A processing without its own controller or DPO inherits the organisation's. A v0.1 manifest or processing file in a v0.2 repo is read with its v0.2 fields absent: each missing answer is an open item, never an error.
+
+Then it resets the branch `compliance/register` from the base branch, commits as `compliance-action`, pushes it and opens a pull request `compliance: update the records of processing`, or updates the open one.
 
 ```yaml
 # .github/workflows/register.yml in bistro-compliance
@@ -171,12 +176,13 @@ jobs:
         with:
           mode: register
           token: ${{ steps.token.outputs.token }}
+          language: en # or fr: the language of the v0.2 dossier
 ```
 
-- **Prepared for review, not certified.** The pull request says that the document is prepared for review by the controller and its data protection officer and does not certify compliance. Rows with no source say `To complete` and need a person. Gaps are expected while people work: the register opens with an **Open items** section that lists them per processing activity, its front matter carries their count (`open_items`), and the pull request body repeats the list, so the review starts with what is missing. The rules that fill each row, and the provenance of each value, are in [`templates/register/README.md`](https://github.com/C2-POLY/compliance-spec/blob/main/templates/register/README.md) of the spec; the template is vendored in `templates/register/` (see `schemas/SOURCE.json` for the spec commit).
-- **Merging records the anchors.** `anchors.yaml` holds, for each repo a processing refers to, the `sha` of its `sync.yaml`. Once the pull request is merged, the next sync of a service counts its lag from that commit, so the lag of each service resets to 0.
-- **Deterministic.** The same compliance repo and the same `generated-at` give the same bytes. When `generated-at` is not set, the action uses the commit time of the base branch of the compliance repo (`git log -1 --format=%cI`), never the clock, so a rerun on the same commit changes nothing. If nothing changed, the run logs it and stops: no branch, no pull request.
-- **Fails closed.** A processing that points to a repo with no `manifest.yaml` or `sync.yaml`, to a tool missing from `compliance.yaml`, or to an unknown `data` or `recipients` id fails the run and writes nothing: a register that silently omits a service would look complete.
+- **Prepared for review, not certified.** The pull request says that the document is prepared for review by the controller and its data protection officer and does not certify compliance. Rows with no source say `To complete` (`À compléter` in French) and need a person. Gaps are expected while people work, so the review starts with what is missing: the v0.1 register opens with an **Open items** section that lists them per processing activity; the v0.2 dossier opens with the **Actions** that close them. The front matter carries their count (`open_items`, and `actions` in v0.2), and the pull request body repeats the list as code spans (the open items in v0.1, each action with its role and count in v0.2; the body is in English whatever the language of the dossier). Open items are found from the source fields while the rows are built, never by reading the rendered text. The rules that fill each row, and the provenance of each value, are in [`templates/register/README.md`](https://github.com/C2-POLY/compliance-spec/blob/main/templates/register/README.md) of the spec; the templates are vendored in `templates/register/` (see `schemas/SOURCE.json` for the spec commit).
+- **Merging records the anchors.** `anchors.yaml` holds the `sha` of the `sync.yaml` of each repo the document reads: in v0.1, each repo a processing refers to; in v0.2, each repo of `compliance.yaml` that has a `services/<repo>/` folder. Its `spec_version` is the one of the document. Once the pull request is merged, the next sync of a service counts its lag from that commit, so the lag of each service resets to 0.
+- **Deterministic.** The same compliance repo and the same `generated-at` give the same bytes. When `generated-at` is not set, the action uses the commit time of the base branch of the compliance repo (`git log -1 --format=%cI`), never the clock, so a rerun on the same commit changes nothing. If nothing changed, the run logs it and stops: no branch, no pull request. A change of `language` changes the bytes, so it opens a pull request.
+- **Fails closed.** A processing that points to a repo with no `manifest.yaml` or `sync.yaml`, to a tool missing from `compliance.yaml`, or to an unknown `data` or `recipients` id fails the run and writes nothing: a register that silently omits a service would look complete. In v0.2, so do a repo with a `services/<repo>/` folder but no `manifest.yaml` or `sync.yaml`, a declared tool with no manifest file, and a notice of `information.notices` that does not resolve. The v0.1 register refuses a v0.2 processing file: upgrade `compliance.yaml` first.
 - **Safe writes.** The action writes only `documents/register.md` and `anchors.yaml`, refuses symbolic links, and pushes the token through the environment of git. It refuses to reset `compliance/register` if a human pushed to it while its pull request is open.
 - **No loop.** The trigger paths do not include `documents/**` or `anchors.yaml`, so merging the register does not start another run. Use the same App as `receive` (or another one with Contents write and Pull requests write): pull requests opened with an App token trigger your checks.
 
@@ -217,6 +223,7 @@ updates:
 | `verify-source` | `true` | `receive` only: check the payload against the service repo. See above. |
 | `compliance-path` | `.` | Checkout of the compliance repo. Used by `receive` and `register`. |
 | `generated-at` | commit time of the base branch of the compliance repo | `register` only: RFC 3339 date-time written in the register and in `anchors.yaml`. |
+| `language` | `en` | `register` only: `en` or `fr`, the language of the v0.2 dossier. A v0.1 register stays in English. |
 | `base-branch` | the repo's default branch | Branch whose pushes are sent (`send`); base of the pull request (`receive`, `register`). |
 
 ## Outputs
@@ -230,7 +237,7 @@ updates:
 
 ### `check`
 
-Parses the manifest as strict YAML 1.2 (no tags, anchors, aliases or directives, one document) and validates it against the v0.1 JSON Schema plus the cross-reference rules (unique ids, `data` and `component` references). A missing file or an invalid manifest fails the job; each error is an annotation on the file with its path and message.
+Parses the manifest as strict YAML 1.2 (no tags, anchors, aliases or directives, one document) and validates it against the JSON Schema of its `spec_version` (v0.1 or v0.2; an unknown version is rejected) plus the cross-reference rules (unique ids, including component, notice and obligation ids; `data`, `component` and flow `processor` references). A missing file or an invalid manifest fails the job; each error is an annotation on the file with its path and message.
 
 ### `send`
 
@@ -243,11 +250,11 @@ The lag is the number of commits `git log <anchor>..<sha> -- <linked_files>`, wh
 
 ### `receive`
 
-Runs in the compliance repo on `repository_dispatch`. It checks that the repo is listed in `compliance.yaml` with a URL of the form `https://github.com/<owner>/<name>`, validates the manifest again, verifies it against the service repo (unless `verify-source: false`), refuses symbolic links on the way to the files, and writes only `services/<name>/manifest.yaml` and `services/<name>/sync.yaml`. It then resets the branch `compliance/<name>` from the base branch, commits as `compliance-action`, pushes that branch only (force-with-lease: it is a bot-owned branch) and opens a pull request `compliance: update <name> to <short sha>`, or updates the open one.
+Runs in the compliance repo on `repository_dispatch`. It checks that the repo is listed in `compliance.yaml` with a URL of the form `https://github.com/<owner>/<name>`, validates the manifest again, verifies it against the service repo (unless `verify-source: false`), refuses symbolic links on the way to the files, and writes only `services/<name>/manifest.yaml` and `services/<name>/sync.yaml` (whose `spec_version` is the one of `compliance.yaml`). It then resets the branch `compliance/<name>` from the base branch, commits as `compliance-action`, pushes that branch only (force-with-lease: it is a bot-owned branch) and opens a pull request `compliance: update <name> to <short sha>`, or updates the open one.
 
 ### `register`
 
-See [Generate the register](#generate-the-register). Writes `documents/register.md` and `anchors.yaml` on the branch `compliance/register` and opens a pull request.
+See [Generate the register](#generate-the-register). Writes `documents/register.md` (the v0.1 register or the v0.2 dossier) and `anchors.yaml` on the branch `compliance/register` and opens a pull request.
 
 ## Disclaimer
 
@@ -262,13 +269,13 @@ npm run all        # typecheck, test, build
 
 `dist/` is committed (the runner executes `dist/index.js`): rebuild it with `npm run build` and commit the result; CI fails if it is stale.
 
-The schemas in `schemas/v0.1/` are vendored. To update them from a checkout of compliance-spec:
+The schemas in `schemas/v0.1/` and `schemas/v0.2/` and the templates in `templates/register/` (`register.md.tmpl` for v0.1, `register.en.md.tmpl` and `register.fr.md.tmpl` for v0.2) are vendored. To update them from a checkout of compliance-spec:
 
 ```
 node scripts/sync-schemas.mjs ../compliance-spec
 ```
 
-`schemas/SOURCE.json` records the spec commit they come from. The cross-reference checks of the spec's `validate.mjs` are ported in `src/schema.ts`.
+`schemas/SOURCE.json` records the spec commit they come from. The cross-reference checks of the spec's `validate.mjs` are ported in `src/schema.ts`. The v0.1 register is built in `src/register.ts`, the v0.2 dossier in `src/dossier.ts`; their golden outputs for the Bistro Booking example are `tests/fixtures/bistro-booking/documents/register.md` (v0.1) and `tests/fixtures/v0.2/bistro-booking/documents/register.md` and `register.fr.md` (v0.2), which the spec copies byte for byte.
 
 ## Licence
 

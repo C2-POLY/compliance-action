@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import * as core from '@actions/core';
 import { stringify } from 'yaml';
@@ -7,7 +7,8 @@ import { BOT_EMAIL, BOT_NAME, assertNoSymlink, commitPushAndOpenPr, guardBotBran
 import { ActionError } from './errors.js';
 import { mustGit, runGit, type GitRunner } from './git.js';
 import { parseStrict } from './yaml.js';
-import { SPEC_VERSION, validateDocument, validateText, type SchemaName } from './schema.js';
+import { validateDocument, validateText, versionOf, type SchemaName, type SpecVersion } from './schema.js';
+import { actionLabel, actionsSummary, buildDossier, LANGUAGES, roleLabel, type Language } from './dossier.js';
 import type { EventContext } from './types.js';
 
 export { BOT_EMAIL, BOT_NAME };
@@ -15,18 +16,20 @@ export { BOT_EMAIL, BOT_NAME };
 export const REGISTER_BRANCH = 'compliance/register';
 export const REGISTER_TITLE = 'compliance: update the records of processing';
 const TEMPLATE_URL = new URL('../templates/register/register.md.tmpl', import.meta.url);
+/** The version of the register this module writes: a v0.2 compliance repo gets the dossier of dossier.ts. */
+const REGISTER_VERSION = '0.1';
 
 // EU/EEA country codes, fixed by version 0.1 of the template (templates/register/README.md).
-const EU_EEA = new Set('AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IS IT LV LI LT LU MT NL NO PL PT RO SK SI ES SE'.split(' '));
+export const EU_EEA = new Set('AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IS IT LV LI LT LU MT NL NO PL PT RO SK SI ES SE'.split(' '));
 
-const TO_COMPLETE = 'To complete';
+export const TO_COMPLETE = 'To complete';
 const NONE_IDENTIFIED = 'None identified in the sources';
 const NO_SOURCE = '—';
 /** Always To complete in v0.1 (no field in the processing format): never an open item. */
 const NOT_COUNTED = new Set(['(a) Joint controller', '(a) Representative']);
 
 /** A required text a person wrote as "to complete" is a gap, not a value. */
-const isPlaceholder = (value: string): boolean => /^to complete$/i.test(value.trim());
+export const isPlaceholder = (value: string): boolean => /^to complete$/i.test(value.trim());
 const filled = (value: string): string => (isPlaceholder(value) ? TO_COMPLETE : value);
 
 /** Free text as an inline code span on one line: no markdown, no @mention, no line break. */
@@ -43,13 +46,13 @@ export function openSummary(count: number, withOpen: number, total: number): str
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-type Doc = Record<string, any>;
-type Src = { kind: 'code' | 'spec' | 'declared'; ref: string };
+export type Doc = Record<string, any>;
+export type Src = { kind: 'code' | 'spec' | 'declared'; ref: string };
 
 // ---------- template renderer ----------
 
 type Value = string | Context[];
-interface Context {
+export interface Context {
   [name: string]: Value;
 }
 
@@ -121,23 +124,23 @@ export function renderTemplate(template: string, root: Context): string {
 
 // ---------- helpers ----------
 
-const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+export const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 /** One line, trimmed, `|` escaped. */
-function cell(value: string): string {
+export function cell(value: string): string {
   return value.replace(/\r\n|\r|\n/g, ' ').replace(/\|/g, '\\|').trim();
 }
 
 const SOURCE_RANK: Record<string, number> = { code: 0, spec: 1, declared: 2 };
 const sourceRank = (source: string): number => SOURCE_RANK[source.slice(0, source.indexOf(':'))] ?? 3;
 
-interface Cand {
+export interface Cand {
   value: string;
   source: string;
 }
 
 /** One row per value; the source is the strongest (kind, then ascending string). Sorted by value. */
-function atomic(cands: Cand[]): Cand[] {
+export function atomic(cands: Cand[]): Cand[] {
   const best = new Map<string, string>();
   for (const c of cands) {
     const had = best.get(c.value);
@@ -149,7 +152,7 @@ function atomic(cands: Cand[]): Cand[] {
 }
 
 /** Composite values: sorted by value then source; the same value from the same source is one row. */
-function composite(cands: Cand[]): Cand[] {
+export function composite(cands: Cand[]): Cand[] {
   const seen = new Set<string>();
   return cands
     .filter((c) => {
@@ -162,16 +165,16 @@ function composite(cands: Cand[]): Cand[] {
 }
 
 /** A value of processing.yaml: a processing file has no sync, so `code` is written as `declared`. */
-function processingSource(source: Src): string {
+export function processingSource(source: Src): string {
   return source.kind === 'spec' ? `spec: ${source.ref}` : `declared: ${source.ref}`;
 }
 
-const duration = (r: { duration: string; trigger?: string }): string => (r.trigger ? `${r.duration}, ${r.trigger}` : r.duration);
+export const duration = (r: { duration: string; trigger?: string }): string => (r.trigger ? `${r.duration}, ${r.trigger}` : r.duration);
 const country = (c: string): string => (c === 'unknown' ? 'country unknown' : c);
 
 // ---------- loading ----------
 
-interface Manifest {
+export interface Manifest {
   /** services/<repo>/manifest.yaml or declared/<tool>/manifest.yaml */
   file: string;
   /** Folder name under services/, absent for a declared tool. */
@@ -181,7 +184,7 @@ interface Manifest {
   doc: Doc;
 }
 
-function readDoc(root: string, rel: string, schema: SchemaName): Doc {
+export function readDoc(root: string, rel: string, schema: SchemaName): Doc {
   const parts = rel.split('/');
   assertNoSymlink(root, ...parts);
   let text: string;
@@ -195,11 +198,24 @@ function readDoc(root: string, rel: string, schema: SchemaName): Doc {
   return doc as Doc;
 }
 
-function listDirs(root: string, rel: string): string[] {
+/** Like existsSync, without following a symbolic link: a dangling link still exists, and readDoc then refuses it. */
+export function existsNoFollow(path: string): boolean {
+  try {
+    lstatSync(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function listDirs(root: string, rel: string): string[] {
   assertNoSymlink(root, rel);
   const dir = join(root, rel);
   if (!existsSync(dir)) return [];
-  return readdirSync(dir, { withFileTypes: true })
+  const entries = readdirSync(dir, { withFileTypes: true });
+  const link = entries.find((e) => e.isSymbolicLink());
+  if (link) throw new ActionError(`${rel}/${link.name} is a symbolic link: refused, so that nothing is silently left out. Nothing was generated.`);
+  return entries
     .filter((e) => e.isDirectory())
     .map((e) => e.name)
     .sort(cmp);
@@ -217,6 +233,7 @@ export interface Register {
 export function buildRegister(complianceDir: string, generatedAt: string): Register {
   const root = resolve(complianceDir);
   const compliance = readDoc(root, 'compliance.yaml', 'compliance');
+  if (versionOf(compliance) !== REGISTER_VERSION) throw new ActionError(`compliance.yaml is spec_version "${compliance.spec_version}": use buildDossier.`);
 
   const manifests = new Map<string, Manifest>();
   const load = (repo: string | undefined, tool: string | undefined, who: string): Manifest => {
@@ -232,6 +249,7 @@ export function buildRegister(complianceDir: string, generatedAt: string): Regis
     const known = manifests.get(file);
     if (known) return known;
     const doc = readDoc(root, file, 'manifest');
+    if (versionOf(doc) !== REGISTER_VERSION) throw new ActionError(`${file} is spec_version "${doc.spec_version}" but compliance.yaml is "${REGISTER_VERSION}": its v0.2 fields would be ignored. Upgrade compliance.yaml to "0.2". Nothing was generated.`);
     const m: Manifest = { file, doc };
     if (repo !== undefined) {
       const sync = readDoc(root, `services/${repo}/sync.yaml`, 'sync');
@@ -243,8 +261,13 @@ export function buildRegister(complianceDir: string, generatedAt: string): Regis
 
   // Processings, sorted by id.
   const processings: Doc[] = listDirs(root, 'processings')
-    .filter((d) => existsSync(join(root, 'processings', d, 'processing.yaml')))
-    .map((d) => readDoc(root, `processings/${d}/processing.yaml`, 'processing'))
+    .filter((d) => existsNoFollow(join(root, 'processings', d, 'processing.yaml')))
+    .map((d) => {
+      const doc = readDoc(root, `processings/${d}/processing.yaml`, 'processing');
+      // A v0.2 processing may have no controller: it needs the v0.2 dossier, hence a v0.2 compliance.yaml.
+      if (versionOf(doc) !== REGISTER_VERSION) throw new ActionError(`processings/${d}/processing.yaml is spec_version "${doc.spec_version}" but compliance.yaml is "${REGISTER_VERSION}": upgrade compliance.yaml to "0.2". Nothing was generated.`);
+      return doc;
+    })
     .sort((a, b) => cmp(a.id, b.id));
   for (let i = 1; i < processings.length; i++) {
     if (processings[i].id === processings[i - 1].id) throw new ActionError(`Two processings have the id "${processings[i].id}".`);
@@ -288,7 +311,7 @@ export function buildRegister(complianceDir: string, generatedAt: string): Regis
     for (const { m } of list) if (m.repo !== undefined) anchors[m.repo] = m.sha!;
   }
   const sortedAnchors = Object.fromEntries(Object.entries(anchors).sort(([a], [b]) => cmp(a, b)));
-  const check = validateDocument('anchors', { spec_version: SPEC_VERSION, generated_at: generatedAt, repos: Object.fromEntries(Object.entries(sortedAnchors).map(([k, sha]) => [k, { sha }])) });
+  const check = validateDocument('anchors', { spec_version: REGISTER_VERSION, generated_at: generatedAt, repos: Object.fromEntries(Object.entries(sortedAnchors).map(([k, sha]) => [k, { sha }])) });
   if (check.length > 0) throw new ActionError(`generated_at "${generatedAt}" is not usable: ${check[0].instancePath}: ${check[0].message}.`);
 
   const sections = processings.map((p) => {
@@ -414,7 +437,7 @@ export function buildRegister(complianceDir: string, generatedAt: string): Regis
   const open = sections.map((x) => x.open);
   const count = open.reduce((n, x) => n + x.items.length, 0);
   const markdown = renderTemplate(template, {
-    spec_version: SPEC_VERSION,
+    spec_version: REGISTER_VERSION,
     generated_at: generatedAt,
     open_items: String(count),
     open_summary: openSummary(count, open.filter((x) => x.items.length > 0).length, open.length),
@@ -426,10 +449,10 @@ export function buildRegister(complianceDir: string, generatedAt: string): Regis
   return { markdown, anchors: sortedAnchors, open };
 }
 
-/** The anchors.yaml that goes with a register: same repos, same shas, same generated_at. */
-export function anchorsYaml(anchors: Record<string, string>, generatedAt: string): string {
+/** The anchors.yaml that goes with a register: same repos, same shas, same generated_at, the version of the document. */
+export function anchorsYaml(anchors: Record<string, string>, generatedAt: string, specVersion: SpecVersion = REGISTER_VERSION): string {
   const doc = {
-    spec_version: SPEC_VERSION,
+    spec_version: specVersion,
     generated_at: generatedAt,
     repos: Object.fromEntries(Object.entries(anchors).map(([repo, sha]) => [repo, { sha }])),
   };
@@ -449,15 +472,59 @@ function previousGeneratedAt(root: string): string | null {
   }
 }
 
+interface Generated {
+  markdown: string;
+  anchors: Record<string, string>;
+  specVersion: SpecVersion;
+  /** The lines of the pull request body that list what is open. */
+  openLines: string[];
+  /** The first sentence of the pull request body. */
+  what: string;
+  /** The sentence of the pull request body that explains the open items. */
+  howToRead: string;
+}
+
+/** The document of the compliance repo's version: the v0.1 register, or the v0.2 dossier in `language`. */
+function generate(root: string, generatedAt: string, language: Language): Generated {
+  const compliance = readDoc(root, 'compliance.yaml', 'compliance');
+  if (versionOf(compliance) === REGISTER_VERSION) {
+    const { markdown, anchors, open } = buildRegister(root, generatedAt);
+    return {
+      markdown,
+      anchors,
+      specVersion: REGISTER_VERSION,
+      what: 'Records of processing activities (GDPR Art. 30(1)) generated from the compliance repo.',
+      openLines: [
+        `- Open items: ${openSummary(open.reduce((n, x) => n + x.items.length, 0), open.filter((x) => x.items.length > 0).length, open.length)}`,
+        ...open.filter((x) => x.items.length > 0).map((x) => `  - ${codeSpan(`${x.name} (${x.id})`)}: ${x.items.map(codeSpan).join(', ')}`),
+      ],
+      howToRead: 'Open items are listed first in the register: rows marked `To complete` have no source and need a person, and joint controller and representative are always to confirm by hand.',
+    };
+  }
+  const d = buildDossier(root, generatedAt, language);
+  return {
+    markdown: d.markdown,
+    anchors: d.anchors,
+    specVersion: '0.2',
+    what: `Compliance dossier (organisation, actions, records of processing under GDPR Art. 30(1), DPO checks, AI features) generated from the compliance repo, in ${language === 'fr' ? 'French' : 'English'}.`,
+    // The pull request body is in English, whatever the language of the dossier.
+    openLines: [
+      `- Open items: ${actionsSummary(d.openItems, d.actions.length, 'en')}`,
+      ...d.actions.map((a) => `  - ${codeSpan(a.id)}: ${codeSpan(actionLabel(a.id, 'en'))} (${codeSpan(roleLabel(a.role, 'en'))}, ${a.count})`),
+    ],
+    howToRead: 'The actions that close the open items are listed first in the dossier: rows marked `To complete` have no source and need a person.',
+  };
+}
+
 /** True when regenerating with the previous generated_at gives the files already there, byte for byte. */
-function isUpToDate(root: string, previous: string): boolean {
+function isUpToDate(root: string, previous: string, language: Language): boolean {
   const registerPath = join(root, 'documents', 'register.md');
   if (!existsSync(registerPath)) return false;
-  // previous passed the anchors schema, so buildRegister only fails on what the regular build fails on.
-  const same = buildRegister(root, previous);
+  // previous passed the anchors schema, so the build only fails on what the regular build fails on.
+  const same = generate(root, previous, language);
   return (
     readFileSync(registerPath, 'utf8') === same.markdown &&
-    readFileSync(join(root, 'anchors.yaml'), 'utf8') === anchorsYaml(same.anchors, previous)
+    readFileSync(join(root, 'anchors.yaml'), 'utf8') === anchorsYaml(same.anchors, previous, same.specVersion)
   );
 }
 
@@ -469,6 +536,8 @@ export interface RegisterOptions {
   token: string;
   /** RFC 3339. Default: the commit time of HEAD of the compliance repo, so that reruns give the same bytes. */
   generatedAt?: string;
+  /** Language of the v0.2 dossier, `en` (default) or `fr`. A v0.1 register is always in English. */
+  language?: string;
   ctx: EventContext;
   api: Api;
   git?: GitRunner;
@@ -480,6 +549,8 @@ export async function runRegister(o: RegisterOptions): Promise<void> {
   const branch = REGISTER_BRANCH;
   const base = o.baseBranch;
   const repo = o.ctx.repo;
+  const language = (o.language || 'en') as Language;
+  if (!LANGUAGES.includes(language)) throw new ActionError(`Unknown language "${o.language}". Use ${LANGUAGES.join(' or ')}.`);
 
   const remoteEnv = remoteAuthEnv(o.token);
   const { existing, remoteSha } = await guardBotBranch({ git, api: o.api, root, repo, branch, base, remoteEnv });
@@ -492,17 +563,18 @@ export async function runRegister(o: RegisterOptions): Promise<void> {
   // A commit that changes nothing in the register (a receive with no processing using it)
   // must not open a pull request whose only change is generated_at.
   const previous = previousGeneratedAt(root);
-  if (previous && isUpToDate(root, previous)) {
+  if (previous && isUpToDate(root, previous, language)) {
     core.notice(`The register and anchors.yaml are already up to date with origin/${base}: nothing to commit.`);
     return;
   }
 
   const generatedAt = o.generatedAt || (await mustGit(git, ['log', '-1', '--format=%cI'], root));
-  const { markdown, anchors, open } = buildRegister(root, generatedAt);
+  const { markdown, anchors, specVersion, what, openLines, howToRead } = generate(root, generatedAt, language);
+  if (specVersion === REGISTER_VERSION && language !== 'en') core.info(`compliance.yaml is spec_version "${REGISTER_VERSION}": the register is in English, language "${language}" applies to a v0.2 dossier only.`);
 
   mkdirSync(join(root, 'documents'), { recursive: true });
   writeNoFollow(join(root, 'documents', 'register.md'), markdown);
-  writeNoFollow(join(root, 'anchors.yaml'), anchorsYaml(anchors, generatedAt));
+  writeNoFollow(join(root, 'anchors.yaml'), anchorsYaml(anchors, generatedAt, specVersion));
 
   await mustGit(git, ['add', '--', 'documents/register.md', 'anchors.yaml'], root);
   const staged = await git(['diff', '--cached', '--quiet'], root);
@@ -512,14 +584,13 @@ export async function runRegister(o: RegisterOptions): Promise<void> {
   }
 
   const body = [
-    'Records of processing activities (GDPR Art. 30(1)) generated from the compliance repo.',
+    what,
     '',
     `- Generated at: \`${generatedAt}\``,
     `- Repos documented: ${Object.keys(anchors).length > 0 ? Object.entries(anchors).map(([r, sha]) => `\`${r}\` at \`${sha.slice(0, 7)}\``).join(', ') : 'none'}`,
-    `- Open items: ${openSummary(open.reduce((n, x) => n + x.items.length, 0), open.filter((x) => x.items.length > 0).length, open.length)}`,
-    ...open.filter((x) => x.items.length > 0).map((x) => `  - ${codeSpan(`${x.name} (${x.id})`)}: ${x.items.map(codeSpan).join(', ')}`),
+    ...openLines,
     '',
-    'This document is prepared for review by the controller and its data protection officer. It does not certify compliance with the GDPR. Open items are listed first in the register: rows marked `To complete` have no source and need a person, and joint controller and representative are always to confirm by hand.',
+    `This document is prepared for review by the controller and its data protection officer. It does not certify compliance with the GDPR${specVersion === REGISTER_VERSION ? '' : ' or the AI Act'}. ${howToRead}`,
     '',
     'Merging this pull request records `anchors.yaml`: the lag of each service then restarts from 0. Written by compliance-action; do not edit `documents/register.md` or `anchors.yaml` by hand.',
   ].join('\n');

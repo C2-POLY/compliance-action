@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/sync.schema.json",
+  "title": "Sync record",
+  "description": "Written by the Action each time a repo sends its manifest. File: services/<repo>/sync.yaml.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "repo", "sha", "received_at", "lag"],
+  "properties": {
+    "spec_version": { "const": "0.2" },
+    "repo": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+$" },
+    "sha": { "$ref": "#/$defs/sha", "description": "Commit of the repo whose manifest was sent." },
+    "received_at": { "type": "string", "format": "date-time" },
+    "lag": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["anchor", "count", "commits"],
+          "properties": {
+            "anchor": { "oneOf": [{ "$ref": "#/$defs/sha" }, { "type": "null" }] },
+            "count": { "type": "integer", "minimum": 0 },
+            "commits": { "type": "array", "items": { "$ref": "#/$defs/sha" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": { "status": { "const": "unknown" } }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+  }
+}

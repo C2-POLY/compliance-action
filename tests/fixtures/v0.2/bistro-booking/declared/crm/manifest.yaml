@@ -1,0 +1,59 @@
+spec_version: "0.1"
+
+service:
+  name: ClientDesk CRM
+  description: "Hosted customer relationship tool used by the marketing team to send the newsletter, which partner restaurants co-edit: they choose the offers sent to their guests. Declared by hand, there is no repo."
+  controller: shared
+  source: {kind: declared, ref: "marketing team"}
+
+personal_data:
+  - id: newsletter-contacts
+    subjects: [guests who subscribed to the newsletter]
+    fields:
+      - {name: guest name, category: identity}
+      - {name: guest email, category: contact}
+      - {name: subscription date and consent record, category: usage}
+      - {name: campaign notes (free text), category: unknown}
+    purpose: send the monthly newsletter and special offers
+    legal_basis: consent
+    source: {kind: declared, ref: "marketing team"}
+
+storage:
+  - id: crm-database
+    kind: database
+    location: ClientDesk CRM cloud, Ireland
+    data: [newsletter-contacts]
+    retention: {duration: P2Y, trigger: after the last interaction with the contact}
+    source: {kind: declared, ref: "marketing team"}
+
+  - id: campaign-exports
+    kind: file
+    location: CSV exports of the contact list on the marketing team's shared drive
+    data: [newsletter-contacts]
+    retention: {duration: unknown}
+    source: {kind: declared, ref: "marketing team"}
+
+processors:
+  - id: clientdesk
+    name: ClientDesk CRM
+    service: contact database and email campaigns
+    country: IE
+    dpa: "yes"
+    transfer_outside_eu: false
+    data: [newsletter-contacts]
+    source: {kind: declared, ref: "marketing team"}
+
+  - id: bulkletter
+    name: BulkLetter
+    service: delivery of the newsletter to large lists
+    country: US
+    dpa: "no"
+    transfer_outside_eu: true
+    data: [newsletter-contacts]
+    source: {kind: declared, ref: "marketing team"}
+
+outbound_flows: []
+
+automated_decisions: []
+
+ai_features: []

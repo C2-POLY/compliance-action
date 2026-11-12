@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/processing.schema.json",
+  "title": "Processing activity",
+  "description": "One processing activity of the organisation (GDPR Art. 30), with the checks a DPO reviews. File: processings/<id>/processing.yaml in the compliance repo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "id", "name", "purpose", "data_subjects", "legal_basis", "services", "source"],
+  "properties": {
+    "spec_version": { "const": "0.2" },
+    "id": { "$ref": "#/$defs/id" },
+    "name": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1 },
+    "controller": { "$ref": "#/$defs/contact", "description": "Absent: organisation.controller of compliance.yaml." },
+    "dpo": { "$ref": "#/$defs/contact", "description": "Absent: organisation.dpo of compliance.yaml." },
+    "joint_controllers": {
+      "type": "array",
+      "description": "Joint controllers (GDPR Art. 26). [] means none, stated by a person; absent means not confirmed.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "contact", "arrangement"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "contact": { "type": "string", "minLength": 1 },
+          "arrangement": { "type": "string", "minLength": 1, "description": "The arrangement between the joint controllers, or where it is." }
+        }
+      }
+    },
+    "data_subjects": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "legal_basis": { "$ref": "#/$defs/legal_basis" },
+    "legal_basis_detail": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "balancing_test": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["interest", "necessity", "impact", "safeguards"],
+          "description": "Expected when legal_basis is legitimate-interests.",
+          "properties": {
+            "interest": { "$ref": "#/$defs/text" },
+            "necessity": { "$ref": "#/$defs/text" },
+            "impact": { "$ref": "#/$defs/text" },
+            "safeguards": { "$ref": "#/$defs/text" }
+          }
+        },
+        "consent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["collection", "withdrawal"],
+          "description": "Expected when legal_basis is consent.",
+          "properties": {
+            "collection": { "$ref": "#/$defs/text" },
+            "withdrawal": { "$ref": "#/$defs/text" }
+          }
+        },
+        "reference": { "$ref": "#/$defs/text", "description": "Expected when legal_basis is contract, legal-obligation, public-task or vital-interests." }
+      }
+    },
+    "dpia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required"],
+      "properties": {
+        "required": { "enum": ["yes", "no", "to-assess"] },
+        "criteria": {
+          "type": "array",
+          "uniqueItems": true,
+          "description": "The EDPB criteria that apply; [] means none.",
+          "items": { "enum": ["evaluation", "automated-decision", "monitoring", "sensitive", "large-scale", "matching", "vulnerable", "innovative", "prevents-rights"] }
+        },
+        "ref": { "$ref": "#/$defs/text", "description": "The DPIA document, when one exists." }
+      }
+    },
+    "information": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [{ "required": ["notices"] }, { "required": ["text"] }],
+      "description": "How the persons are told (GDPR Art. 13 and 14).",
+      "properties": {
+        "notices": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id"],
+            "oneOf": [{ "required": ["repo"] }, { "required": ["tool"] }],
+            "properties": {
+              "repo": { "$ref": "#/$defs/repo_name", "description": "A repo listed in compliance.yaml." },
+              "tool": { "$ref": "#/$defs/id", "description": "A declared tool listed in compliance.yaml." },
+              "id": { "$ref": "#/$defs/id", "description": "A notices id of that service's manifest." }
+            }
+          }
+        },
+        "text": { "$ref": "#/$defs/text" }
+      }
+    },
+    "sensitive_data": {
+      "description": "Special categories of data (GDPR Art. 9): none, to-assess, or the categories found.",
+      "oneOf": [
+        { "enum": ["none", "to-assess"] },
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["racial-ethnic", "political", "religious", "union", "genetic", "biometric", "health", "sex-life", "criminal"] }
+        }
+      ]
+    },
+    "services": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "oneOf": [{ "required": ["repo"] }, { "required": ["tool"] }],
+        "properties": {
+          "repo": { "$ref": "#/$defs/repo_name", "description": "A repo listed in compliance.yaml." },
+          "tool": { "$ref": "#/$defs/id", "description": "A declared tool listed in compliance.yaml." },
+          "data": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "personal_data ids of that service's manifest. Absent means all of them." },
+          "recipients": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "processors and outbound_flows ids of that service's manifest that belong to this processing. Absent means those that share data with the entry's scope." }
+        }
+      }
+    },
+    "security_measures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["measure", "source"],
+        "properties": { "measure": { "type": "string", "minLength": 1 }, "source": { "$ref": "#/$defs/source" } }
+      }
+    },
+    "recipients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "source"],
+        "properties": { "name": { "type": "string", "minLength": 1 }, "source": { "$ref": "#/$defs/source" } }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration", "source"],
+      "properties": {
+        "duration": { "type": "string", "pattern": "^(none|session|unknown|P(?!$)(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?=\\d)(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?)$" },
+        "trigger": { "type": "string", "minLength": 1 },
+        "source": { "$ref": "#/$defs/source" }
+      }
+    },
+    "source": { "$ref": "#/$defs/source" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "repo_name": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+$" },
+    "text": { "type": "string", "minLength": 1 },
+    "legal_basis": { "enum": ["consent", "contract", "legal-obligation", "vital-interests", "public-task", "legitimate-interests", "not-applicable"] },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "contact"],
+      "properties": { "name": { "type": "string", "minLength": 1 }, "contact": { "type": "string", "minLength": 1 } }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": { "kind": { "enum": ["code", "spec", "declared"] }, "ref": { "type": "string", "minLength": 1 } }
+    }
+  }
+}

@@ -7,7 +7,7 @@ import { BOT_EMAIL, BOT_NAME, assertNoSymlink, commitPushAndOpenPr, guardBotBran
 import { ActionError } from './errors.js';
 import { mustGit, runGit, type GitRunner } from './git.js';
 import { EVENT_TYPE, parseRepoRef } from './send.js';
-import { SPEC_VERSION, validateDocument, validateText } from './schema.js';
+import { validateDocument, validateText, versionOf, type SpecVersion } from './schema.js';
 import type { EventContext, Lag } from './types.js';
 import { lagCount, lagStatus } from './types.js';
 
@@ -52,7 +52,8 @@ function readPayload(ctx: EventContext): Received {
   return { repo: p.repo, name, owner, sha: p.sha, manifest: p.manifest, lag: p.lag };
 }
 
-function assertListed(compliancePath: string, r: Received): void {
+/** Checks that the sender is listed; returns the spec_version of compliance.yaml. */
+function assertListed(compliancePath: string, r: Received): SpecVersion {
   let text: string;
   try {
     text = readFileSync(join(compliancePath, 'compliance.yaml'), 'utf8');
@@ -70,6 +71,7 @@ function assertListed(compliancePath: string, r: Received): void {
   if (m[1].toLowerCase() !== r.owner.toLowerCase() || m[2].toLowerCase() !== r.name.toLowerCase()) {
     throw new ActionError(`Repo "${r.repo}" does not match the URL listed in compliance.yaml (${entry.url}).`);
   }
+  return versionOf(doc);
 }
 
 /** The payload is only a claim: check it against the sender repo. */
@@ -93,12 +95,15 @@ export async function runReceive(o: ReceiveOptions): Promise<void> {
   const git = o.git ?? runGit;
   const root = resolve(o.compliancePath);
   const r = readPayload(o.ctx);
-  assertListed(root, r);
+  const repoVersion = assertListed(root, r);
 
   const { doc: manifestDoc, errors } = validateText('manifest', r.manifest);
   if (errors.length > 0) {
     for (const e of errors) core.error(`${e.instancePath}: ${e.message}`, { title: `Invalid manifest received from ${r.repo}` });
     throw new ActionError(`The manifest received from ${r.repo} is invalid: ${errors.length} error(s). Nothing was written.`);
+  }
+  if (repoVersion === '0.1' && versionOf(manifestDoc) !== '0.1') {
+    throw new ActionError(`The manifest received from ${r.repo} is spec_version "${versionOf(manifestDoc)}" but compliance.yaml is "0.1": its v0.2 fields would be ignored. Upgrade compliance.yaml to "0.2". Nothing was written.`);
   }
   const declared = (manifestDoc as { service: { repo?: string } }).service.repo;
   if (declared !== undefined && declared.toLowerCase() !== r.repo.toLowerCase()) {
@@ -113,8 +118,9 @@ export async function runReceive(o: ReceiveOptions): Promise<void> {
   }
 
   const { reason: _reason, ...lag } = r.lag as Lag & { reason?: string };
+  // sync.yaml has the same shape in both versions: it takes the version of the compliance repo.
   const sync = {
-    spec_version: SPEC_VERSION,
+    spec_version: repoVersion,
     repo: r.name,
     sha: r.sha,
     received_at: (o.now ?? (() => new Date()))().toISOString(),

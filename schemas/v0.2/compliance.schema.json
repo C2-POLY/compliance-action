@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/C2-POLY/compliance-spec/v0.2.0/schema/v0.2/compliance.schema.json",
+  "title": "Compliance repo index",
+  "description": "The organisation's identity, and the repos and external tools that make up the information system. File: compliance.yaml at the root of the compliance repo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "organisation", "repos"],
+  "properties": {
+    "spec_version": { "const": "0.2" },
+    "organisation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "controller": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["legal_name", "contact"],
+          "description": "The controller (GDPR Art. 30(1)(a)). Inherited by every processing that has no controller of its own.",
+          "properties": {
+            "legal_name": { "type": "string", "minLength": 1 },
+            "address": { "type": "string", "minLength": 1 },
+            "registration": { "type": "string", "minLength": 1 },
+            "contact": { "type": "string", "minLength": 1 }
+          }
+        },
+        "dpo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["designated"],
+          "description": "The data protection officer (GDPR Art. 37). Inherited by every processing that has no dpo of its own.",
+          "properties": {
+            "designated": { "enum": [true, false, "unknown"] },
+            "name": { "type": "string", "minLength": 1 },
+            "contact": { "type": "string", "minLength": 1 },
+            "reason": { "type": "string", "minLength": 1, "description": "Why no DPO is required, when designated is false." }
+          },
+          "allOf": [
+            { "if": { "properties": { "designated": { "const": true } } }, "then": { "required": ["name", "contact"] } },
+            { "if": { "properties": { "designated": { "const": false } } }, "then": { "required": ["reason"] } }
+          ]
+        },
+        "representative": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required"],
+          "description": "The representative in the Union (GDPR Art. 27).",
+          "properties": {
+            "required": { "enum": [true, false, "unknown"] },
+            "name": { "type": "string", "minLength": 1 },
+            "contact": { "type": "string", "minLength": 1 },
+            "reason": { "type": "string", "minLength": 1, "description": "Why none is required, when required is false: \"established in the EU\"." }
+          },
+          "if": { "properties": { "required": { "const": true } } },
+          "then": { "required": ["name", "contact"] }
+        },
+        "privacy_contact": { "type": "string", "minLength": 1, "description": "Where persons exercise their rights." }
+      }
+    },
+    "repos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "url", "owner", "expected_to_send"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+$", "description": "Repo name without owner; also the folder name under services/." },
+          "url": { "type": "string", "format": "uri" },
+          "owner": { "type": "string", "minLength": 1, "description": "Owning person or team." },
+          "expected_to_send": { "type": "boolean" },
+          "components": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } }
+        }
+      }
+    },
+    "declared_tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "path"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "name": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "pattern": "^declared/[a-z0-9][a-z0-9-]*/manifest\\.yaml$" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+  }
+}

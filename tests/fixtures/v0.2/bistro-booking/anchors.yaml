@@ -1,0 +1,7 @@
+spec_version: "0.2"
+generated_at: "2026-11-11T00:00:00Z"
+repos:
+  bistro-api:
+    sha: "7c1e4f9a2b6d8035e1a4c7f90b2d6e8a1c3f5b79"
+  bistro-web:
+    sha: "9d3f6b1a4c7e0258b1d4f7a0c3e6b9d2f5a8c1e4"

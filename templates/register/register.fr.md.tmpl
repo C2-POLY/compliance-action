@@ -1,0 +1,82 @@
+---
+spec_version: "{{spec_version}}"
+language: {{language}}
+generated_at: "{{generated_at}}"
+open_items: {{open_items}}
+actions: {{action_count}}
+anchors:
+{{#each anchors}}
+  {{repo}}: "{{sha}}"
+{{/each}}
+---
+
+# Dossier de conformité
+
+- Organisation : {{organisation}}
+- Généré le : {{generated_at}}
+
+Dossier de conformité de l'organisation, construit à partir de son dépôt de conformité : l'identité de l'organisation, les actions qui ferment les points ouverts, puis pour chaque traitement son registre des activités de traitement (RGPD art. 30(1)) et ses contrôles DPO, les fonctionnalités d'IA, et ce qui reste hors du registre. La colonne Source indique d'où vient chaque valeur ; `À compléter` signifie qu'aucune source ne donne la valeur et qu'une personne doit la renseigner. Construction de ce document : `templates/register/README.md` dans le dépôt compliance-spec.
+
+> Préparé pour la revue du responsable du traitement et de son délégué à la protection des données. Ce document ne certifie pas la conformité au RGPD ni à l'AI Act.
+
+## Organisation
+
+| Élément | Valeur | Source |
+| --- | --- | --- |
+{{#each organisation_rows}}
+| {{item}} | {{value}} | {{source}} |
+{{/each}}
+
+## Actions
+
+{{actions_summary}}
+
+| Action | Rôle | Points ouverts fermés | Où |
+| --- | --- | --- | --- |
+{{#each actions}}
+| `{{id}}`: {{label}} | {{role}} | {{count}} | {{where}} |
+{{/each}}
+
+{{#each processings}}
+## {{name}} ({{id}})
+
+### Registre des activités de traitement, RGPD art. 30(1)
+
+| Élément | Valeur | Source |
+| --- | --- | --- |
+{{#each rows}}
+| {{item}} | {{value}} | {{source}} |
+{{/each}}
+
+### Contrôles DPO
+
+| Contrôle | Valeur | Source |
+| --- | --- | --- |
+{{#each checks}}
+| {{item}} | {{value}} | {{source}} |
+{{/each}}
+
+{{/each}}
+## Fonctionnalités d'IA
+
+{{ai_summary}}
+
+| Service | Fonctionnalité | Rôle | Risque | Obligations | Source |
+| --- | --- | --- | --- | --- | --- |
+{{#each ai_features}}
+| {{service}} | {{feature}} | {{role}} | {{risk}} | {{obligations}} | {{source}} |
+{{/each}}
+
+## Hors du registre
+
+{{outside_summary}}
+
+| Service | Responsable | Justification | Protection dès la conception | Données personnelles | Source |
+| --- | --- | --- | --- | --- | --- |
+{{#each outside}}
+| {{service}} | {{controller}} | {{rationale}} | {{privacy_by_design}} | {{personal_data}} | {{source}} |
+{{/each}}
+
+## Non couvert
+
+Ce dossier prépare une revue ; il ne certifie pas la conformité au RGPD ni à l'AI Act. Il contient les références des analyses d'impact relatives à la protection des données, pas les analyses elles-mêmes, et ne montre que ce que les sources indiquent : un traitement, un dépôt ou un outil absent du dépôt de conformité est absent du dossier.

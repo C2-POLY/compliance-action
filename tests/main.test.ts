@@ -34,6 +34,12 @@ describe('main', () => {
     expect(JSON.stringify(vi.mocked(core.setFailed).mock.calls)).not.toContain(TOKEN);
   });
 
+  it('passes the language input to register mode, which refuses an unknown one', async () => {
+    inputs({ mode: 'register', token: TOKEN, 'base-branch': 'main', language: 'de' });
+    await import('../src/main.js');
+    await vi.waitFor(() => expect(core.setFailed).toHaveBeenCalledWith(expect.stringContaining('Unknown language "de"')));
+  });
+
   it('rejects an unknown mode', async () => {
     inputs({ mode: 'bogus' });
     await import('../src/main.js');

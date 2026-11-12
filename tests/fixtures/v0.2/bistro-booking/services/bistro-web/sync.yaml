@@ -1,0 +1,8 @@
+spec_version: "0.2"
+repo: bistro-web
+sha: "9d3f6b1a4c7e0258b1d4f7a0c3e6b9d2f5a8c1e4"
+received_at: "2026-03-10T14:05:52Z"
+lag:
+  anchor: "9d3f6b1a4c7e0258b1d4f7a0c3e6b9d2f5a8c1e4"
+  count: 0
+  commits: []

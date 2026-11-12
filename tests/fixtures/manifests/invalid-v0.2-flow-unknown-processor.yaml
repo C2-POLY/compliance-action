@@ -1,0 +1,22 @@
+# expect: /outbound_flows/0/processor ref
+spec_version: "0.2"
+service: {name: Bistro Booking API, description: Booking API., controller: organisation, source: {kind: declared, ref: README.md}}
+personal_data:
+  - id: guest-contact
+    subjects: [restaurant guests]
+    fields:
+      - {name: guest email, category: contact}
+    purpose: confirm bookings
+    source: {kind: code, ref: "src/bookings/guest.ts"}
+storage: []
+processors: []
+outbound_flows:
+  - id: charge-deposit
+    to: {name: PayGate, country: US}
+    data: [guest-contact]
+    purpose: charge the deposit
+    account: organisation
+    processor: paygate
+    source: {kind: code, ref: "src/pay.ts"}
+automated_decisions: []
+ai_features: []

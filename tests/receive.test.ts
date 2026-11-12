@@ -5,7 +5,7 @@ import { parse } from 'yaml';
 import { BOT_EMAIL, runReceive, type ReceiveOptions } from '../src/receive.js';
 import { validateDocument } from '../src/schema.js';
 import type { EventContext } from '../src/types.js';
-import { EXAMPLE, complianceRepo, git, mockApi, tmp, write } from './helpers.js';
+import { EXAMPLE, EXAMPLE_V02, complianceRepo, git, mockApi, tmp, write } from './helpers.js';
 import { runGit, type GitRunner } from '../src/git.js';
 import * as core from '@actions/core';
 import { lstatSync, mkdirSync, readFileSync as rf, rmSync, symlinkSync } from 'node:fs';
@@ -62,6 +62,24 @@ describe('mode receive', () => {
       title: 'compliance: update bistro-api to a1b2c3d',
     });
     expect(api.updatePullRequest).not.toHaveBeenCalled();
+  });
+
+  it('in a v0.2 compliance repo, accepts a v0.2 manifest and writes a v0.2 sync.yaml', async () => {
+    const { dir } = complianceRepo(EXAMPLE_V02);
+    const manifest = readFileSync(join(EXAMPLE_V02, 'services/bistro-api/manifest.yaml'), 'utf8');
+    await run({ compliancePath: dir, ctx: ctx(send({ manifest })), api: okApi(manifest), now: () => new Date('2026-04-01T10:00:00Z') });
+    expect(readFileSync(join(dir, 'services/bistro-api/manifest.yaml'), 'utf8')).toBe(manifest);
+    const sync = parse(readFileSync(join(dir, 'services/bistro-api/sync.yaml'), 'utf8'));
+    expect(sync).toEqual({ spec_version: '0.2', repo: 'bistro-api', sha: SHA, received_at: '2026-04-01T10:00:00.000Z', lag });
+    expect(validateDocument('sync', sync)).toEqual([]);
+  });
+
+  it('in a v0.2 compliance repo, still accepts a v0.1 manifest, and rejects an invalid v0.2 one', async () => {
+    const { dir } = complianceRepo(EXAMPLE_V02);
+    await run({ compliancePath: dir, ctx: ctx(send()), api: okApi() });
+    expect(readFileSync(join(dir, 'services/bistro-api/manifest.yaml'), 'utf8')).toBe(apiManifest);
+    const bad = readFileSync(join(EXAMPLE_V02, 'services/bistro-api/manifest.yaml'), 'utf8').replace('processor: paygate', 'processor: ghost');
+    await expect(run({ compliancePath: dir, ctx: ctx(send({ manifest: bad, sha: SHA2 })), api: okApi(bad) })).rejects.toThrow(/invalid/);
   });
 
   it('only changes files under services/<name>/', async () => {

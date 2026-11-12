@@ -40461,7 +40461,7 @@ function parseStrict(text) {
 var SOURCE_default = {
   spec_version: "0.1",
   source: "C2-POLY/compliance-spec",
-  commit: "d0f6dce3ee22e428b1785a316d93530de006a591",
+  commit: "bc9351ce99b17c82c114ff85ed4569b5323db219",
   files: [
     "anchors.schema.json",
     "compliance.schema.json",

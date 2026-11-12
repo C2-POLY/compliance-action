@@ -22,6 +22,25 @@ const EU_EEA = new Set('AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IS IT LV LI LT
 const TO_COMPLETE = 'To complete';
 const NONE_IDENTIFIED = 'None identified in the sources';
 const NO_SOURCE = '—';
+/** Always To complete in v0.1 (no field in the processing format): never an open item. */
+const NOT_COUNTED = new Set(['(a) Joint controller', '(a) Representative']);
+
+/** A required text a person wrote as "to complete" is a gap, not a value. */
+const isPlaceholder = (value: string): boolean => /^to complete$/i.test(value.trim());
+const filled = (value: string): string => (isPlaceholder(value) ? TO_COMPLETE : value);
+
+/** Free text as an inline code span on one line: no markdown, no @mention, no line break. */
+export function codeSpan(value: string): string {
+  return `\`${value.replace(/\r\n|\r|\n/g, ' ').replace(/`/g, "'").trim()}\``;
+}
+
+/** The summary line of the open items. */
+export function openSummary(count: number, withOpen: number, total: number): string {
+  const activities = total === 1 ? 'processing activity' : 'processing activities';
+  if (total === 0) return 'No processing activity yet.';
+  if (count === 0) return `No open item in the ${total} ${activities}.`;
+  return `${count} open ${count === 1 ? 'item' : 'items'} in ${withOpen} of the ${total} ${activities}.`;
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Doc = Record<string, any>;
@@ -190,6 +209,8 @@ export interface Register {
   markdown: string;
   /** Repo name to the full sha of its sync.yaml, sorted by repo name. */
   anchors: Record<string, string>;
+  /** The open items of each processing, in the order of the sections. */
+  open: { id: string; name: string; items: string[] }[];
 }
 
 /** Builds the register from a checkout of the compliance repo. Pure: reads files, never the clock. */
@@ -285,6 +306,8 @@ export function buildRegister(complianceDir: string, generatedAt: string): Regis
     const transferCands: { name: string; country: string; source: string }[] = [];
     const storageRows: Cand[] = [];
     const processors: { name: string; country: string; safeguard?: string }[] = [];
+    /** `<item>\0<value>` to the open item that row raises, set where the value is built. */
+    const openOf = new Map<string, string>();
 
     for (const { m, scope, recipients } of list) {
       const d = m.doc;
@@ -294,10 +317,16 @@ export function buildRegister(complianceDir: string, generatedAt: string): Regis
         for (const s of item.subjects as string[]) subjects.push({ value: s, source });
         const byCategory = new Map<string, Set<string>>();
         for (const f of item.fields as Doc[]) byCategory.set(f.category, (byCategory.get(f.category) ?? new Set()).add(f.name));
-        for (const [category, names] of byCategory) personal.push({ value: `${category}: ${[...names].sort(cmp).join(', ')}`, source });
+        for (const [category, names] of byCategory) {
+          const value = `${category}: ${[...names].sort(cmp).join(', ')}`;
+          personal.push({ value, source });
+          if (category === 'unknown') openOf.set(`(c) Personal data\u0000${value}`, '(c) Personal data: category unknown');
+        }
       }
       for (const st of (d.storage as Doc[]).filter((x) => inScope(x.data))) {
-        storageRows.push({ value: `${st.id} (${st.kind}): ${duration(st.retention)}`, source: src(m, st.source) });
+        const value = `${st.id} (${st.kind}): ${duration(st.retention)}`;
+        storageRows.push({ value, source: src(m, st.source) });
+        if (st.retention.duration === 'unknown') openOf.set(`(f) Erasure time limits\u0000${value}`, `(f) Erasure time limits: unknown for ${st.id}`);
       }
       const wanted = (x: Doc): boolean => (recipients ? recipients.has(x.id) : x.data === undefined || inScope(x.data));
       for (const pr of (d.processors as Doc[]).filter(wanted)) {
@@ -326,27 +355,48 @@ export function buildRegister(complianceDir: string, generatedAt: string): Regis
     const transfers = atomic(
       transferCands.map((t) => {
         const who = `${t.name} (${country(t.country)})`;
-        if (t.country === 'unknown') return { value: `${who}: destination to assess`, source: t.source };
+        if (t.country === 'unknown') {
+          const value = `${who}: destination to assess`;
+          openOf.set(`(e) Transfers\u0000${value}`, `(e) Transfers: destination to assess for ${who}`);
+          return { value, source: t.source };
+        }
         const safeguards = processors.filter((x) => x.name === t.name && x.country === t.country && x.safeguard !== undefined).map((x) => x.safeguard!).sort(cmp);
-        return { value: `${who}: ${safeguards[0] ?? 'safeguard not declared'}`, source: t.source };
+        const value = `${who}: ${safeguards[0] ?? 'safeguard not declared'}`;
+        if (safeguards.length === 0) openOf.set(`(e) Transfers\u0000${value}`, `(e) Transfers: safeguard not declared for ${who}`);
+        return { value, source: t.source };
       }),
     );
 
     const rows: { item: string; value: string; source: string }[] = [];
+    // Open items, in the order of the rows, each once (templates/register/README.md, Open items).
+    const open: string[] = [];
+    const flag = (item: string): void => {
+      if (!open.includes(item)) open.push(item);
+    };
     const add = (item: string, cands: Cand[], empty?: string): void => {
       const all = cands.length > 0 ? cands : [{ value: empty ?? TO_COMPLETE, source: NO_SOURCE }];
-      all.forEach((c, i) => rows.push({ item: i === 0 ? item : '', value: c.value, source: c.source }));
+      all.forEach((c, i) => {
+        rows.push({ item: i === 0 ? item : '', value: c.value, source: c.source });
+        if (NOT_COUNTED.has(item)) return;
+        if (c.value === TO_COMPLETE) flag(item);
+        const detail = openOf.get(`${item}\u0000${c.value}`);
+        if (detail !== undefined) flag(detail);
+      });
     };
 
-    add('(a) Controller', [{ value: `${p.controller.name}, ${p.controller.contact}`, source: processingSource(p.source) }]);
+    const controller = `${filled(p.controller.name)}, ${filled(p.controller.contact)}`;
+    if (isPlaceholder(p.controller.name) || isPlaceholder(p.controller.contact)) openOf.set(`(a) Controller\u0000${controller}`, '(a) Controller');
+    add('(a) Controller', [{ value: controller, source: processingSource(p.source) }]);
     add('(a) Joint controller', []);
     add('(a) Representative', []);
-    add('(a) Data protection officer', p.dpo ? [{ value: `${p.dpo.name}, ${p.dpo.contact}`, source: processingSource(p.source) }] : []);
+    if (p.dpo && (isPlaceholder(p.dpo.name) || isPlaceholder(p.dpo.contact))) openOf.set(`(a) Data protection officer\u0000${filled(p.dpo.name)}, ${filled(p.dpo.contact)}`, '(a) Data protection officer');
+    add('(a) Data protection officer', p.dpo ? [{ value: `${filled(p.dpo.name)}, ${filled(p.dpo.contact)}`, source: processingSource(p.source) }] : []);
     add('(b) Purposes', [{ value: p.purpose, source: processingSource(p.source) }]);
     add('(c) Data subjects', atomic(subjects));
     add('(c) Personal data', composite(personal));
     add('(d) Recipients', atomic(recipientCands), NONE_IDENTIFIED);
     add('(e) Transfers', transfers, NONE_IDENTIFIED);
+    if (p.retention?.duration === 'unknown') openOf.set(`(f) Erasure time limits\u0000${duration(p.retention)}`, '(f) Erasure time limits: unknown');
     add('(f) Erasure time limits', p.retention ? [{ value: duration(p.retention), source: processingSource(p.retention.source) }] : composite(storageRows));
     add('(g) Security measures', atomic(((p.security_measures as Doc[] | undefined) ?? []).map((s) => ({ value: s.measure, source: processingSource(s.source) }))));
 
@@ -354,20 +404,26 @@ export function buildRegister(complianceDir: string, generatedAt: string): Regis
       id: cell(p.id),
       name: cell(p.name),
       rows: rows.map((r) => ({ item: cell(r.item), value: cell(r.value), source: cell(r.source) })),
+      open: { id: p.id as string, name: p.name as string, items: open },
     };
   });
 
   let template = readFileSync(TEMPLATE_URL, 'utf8');
   // With no anchor, `anchors: {}` takes the place of the block.
   if (Object.keys(sortedAnchors).length === 0) template = template.replace(/^anchors:\n\{\{#each anchors\}\}\n[\s\S]*?\{\{\/each\}\}\n/m, 'anchors: {}\n');
+  const open = sections.map((x) => x.open);
+  const count = open.reduce((n, x) => n + x.items.length, 0);
   const markdown = renderTemplate(template, {
     spec_version: SPEC_VERSION,
     generated_at: generatedAt,
+    open_items: String(count),
+    open_summary: openSummary(count, open.filter((x) => x.items.length > 0).length, open.length),
+    open: open.map((x) => ({ name: cell(`${x.name} (${x.id})`), items: cell(x.items.length > 0 ? x.items.join('; ') : 'None') })),
     organisation: cell(compliance.organisation.name),
     anchors: Object.entries(sortedAnchors).map(([repo, sha]) => ({ repo, sha: JSON.stringify(sha) })),
-    processings: sections,
+    processings: sections.map(({ id, name, rows }) => ({ id, name, rows })),
   });
-  return { markdown, anchors: sortedAnchors };
+  return { markdown, anchors: sortedAnchors, open };
 }
 
 /** The anchors.yaml that goes with a register: same repos, same shas, same generated_at. */
@@ -442,7 +498,7 @@ export async function runRegister(o: RegisterOptions): Promise<void> {
   }
 
   const generatedAt = o.generatedAt || (await mustGit(git, ['log', '-1', '--format=%cI'], root));
-  const { markdown, anchors } = buildRegister(root, generatedAt);
+  const { markdown, anchors, open } = buildRegister(root, generatedAt);
 
   mkdirSync(join(root, 'documents'), { recursive: true });
   writeNoFollow(join(root, 'documents', 'register.md'), markdown);
@@ -460,8 +516,10 @@ export async function runRegister(o: RegisterOptions): Promise<void> {
     '',
     `- Generated at: \`${generatedAt}\``,
     `- Repos documented: ${Object.keys(anchors).length > 0 ? Object.entries(anchors).map(([r, sha]) => `\`${r}\` at \`${sha.slice(0, 7)}\``).join(', ') : 'none'}`,
+    `- Open items: ${openSummary(open.reduce((n, x) => n + x.items.length, 0), open.filter((x) => x.items.length > 0).length, open.length)}`,
+    ...open.filter((x) => x.items.length > 0).map((x) => `  - ${codeSpan(`${x.name} (${x.id})`)}: ${x.items.map(codeSpan).join(', ')}`),
     '',
-    'This document is prepared for review by the controller and its data protection officer. It does not certify compliance with the GDPR. Rows marked `To complete` have no source and need a person.',
+    'This document is prepared for review by the controller and its data protection officer. It does not certify compliance with the GDPR. Open items are listed first in the register: rows marked `To complete` have no source and need a person, and joint controller and representative are always to confirm by hand.',
     '',
     'Merging this pull request records `anchors.yaml`: the lag of each service then restarts from 0. Written by compliance-action; do not edit `documents/register.md` or `anchors.yaml` by hand.',
   ].join('\n');

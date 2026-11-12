@@ -1,6 +1,7 @@
 ---
 spec_version: "{{spec_version}}"
 generated_at: "{{generated_at}}"
+open_items: {{open_items}}
 anchors:
 {{#each anchors}}
   {{repo}}: {{sha}}
@@ -15,6 +16,18 @@ anchors:
 Records of processing activities of the controller, GDPR Art. 30(1), one section per processing activity. The Source column says where each value comes from; `To complete` means that no source gives the value and a person has to fill it in. How this document is built: `templates/register/README.md` in the compliance-spec repository.
 
 > Prepared for review by the controller and its data protection officer. This document does not certify compliance with the GDPR.
+
+## Open items
+
+{{open_summary}}
+
+| Processing activity | Open items |
+| --- | --- |
+{{#each open}}
+| {{name}} | {{items}} |
+{{/each}}
+
+Joint controller and representative are not counted: the processing format of v0.1 has no field for them, so they always read `To complete` and a person confirms them by hand.
 
 {{#each processings}}
 ## {{name}} ({{id}})

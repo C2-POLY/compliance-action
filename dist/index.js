@@ -40461,7 +40461,7 @@ function parseStrict(text) {
 var SOURCE_default = {
   spec_version: "0.1",
   source: "C2-POLY/compliance-spec",
-  commit: "ec6bcc0075a867f7d4e7b7f902a9a2a2dc9f6d22",
+  commit: "bc9351ce99b17c82c114ff85ed4569b5323db219",
   files: [
     "anchors.schema.json",
     "compliance.schema.json",
@@ -40894,6 +40894,18 @@ var EU_EEA = new Set("AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IS IT LV LI LT L
 var TO_COMPLETE = "To complete";
 var NONE_IDENTIFIED = "None identified in the sources";
 var NO_SOURCE = "\u2014";
+var NOT_COUNTED = /* @__PURE__ */ new Set(["(a) Joint controller", "(a) Representative"]);
+var isPlaceholder = (value) => /^to complete$/i.test(value.trim());
+var filled = (value) => isPlaceholder(value) ? TO_COMPLETE : value;
+function codeSpan(value) {
+  return `\`${value.replace(/\r\n|\r|\n/g, " ").replace(/`/g, "'").trim()}\``;
+}
+function openSummary(count, withOpen, total) {
+  const activities = total === 1 ? "processing activity" : "processing activities";
+  if (total === 0) return "No processing activity yet.";
+  if (count === 0) return `No open item in the ${total} ${activities}.`;
+  return `${count} open ${count === 1 ? "item" : "items"} in ${withOpen} of the ${total} ${activities}.`;
+}
 function parseTemplate(template) {
   const lines = template.split("\n");
   const last = lines.pop();
@@ -41080,6 +41092,7 @@ function buildRegister(complianceDir, generatedAt) {
     const transferCands = [];
     const storageRows = [];
     const processors = [];
+    const openOf = /* @__PURE__ */ new Map();
     for (const { m, scope, recipients } of list) {
       const d = m.doc;
       const inScope = (data) => (data ?? []).some((id) => scope.has(id));
@@ -41088,10 +41101,16 @@ function buildRegister(complianceDir, generatedAt) {
         for (const s of item.subjects) subjects.push({ value: s, source });
         const byCategory = /* @__PURE__ */ new Map();
         for (const f of item.fields) byCategory.set(f.category, (byCategory.get(f.category) ?? /* @__PURE__ */ new Set()).add(f.name));
-        for (const [category, names] of byCategory) personal.push({ value: `${category}: ${[...names].sort(cmp).join(", ")}`, source });
+        for (const [category, names] of byCategory) {
+          const value = `${category}: ${[...names].sort(cmp).join(", ")}`;
+          personal.push({ value, source });
+          if (category === "unknown") openOf.set(`(c) Personal data\0${value}`, "(c) Personal data: category unknown");
+        }
       }
       for (const st of d.storage.filter((x) => inScope(x.data))) {
-        storageRows.push({ value: `${st.id} (${st.kind}): ${duration(st.retention)}`, source: src(m, st.source) });
+        const value = `${st.id} (${st.kind}): ${duration(st.retention)}`;
+        storageRows.push({ value, source: src(m, st.source) });
+        if (st.retention.duration === "unknown") openOf.set(`(f) Erasure time limits\0${value}`, `(f) Erasure time limits: unknown for ${st.id}`);
       }
       const wanted = (x) => recipients ? recipients.has(x.id) : x.data === void 0 || inScope(x.data);
       for (const pr of d.processors.filter(wanted)) {
@@ -41117,43 +41136,69 @@ function buildRegister(complianceDir, generatedAt) {
     const transfers = atomic(
       transferCands.map((t) => {
         const who = `${t.name} (${country(t.country)})`;
-        if (t.country === "unknown") return { value: `${who}: destination to assess`, source: t.source };
+        if (t.country === "unknown") {
+          const value2 = `${who}: destination to assess`;
+          openOf.set(`(e) Transfers\0${value2}`, `(e) Transfers: destination to assess for ${who}`);
+          return { value: value2, source: t.source };
+        }
         const safeguards = processors.filter((x) => x.name === t.name && x.country === t.country && x.safeguard !== void 0).map((x) => x.safeguard).sort(cmp);
-        return { value: `${who}: ${safeguards[0] ?? "safeguard not declared"}`, source: t.source };
+        const value = `${who}: ${safeguards[0] ?? "safeguard not declared"}`;
+        if (safeguards.length === 0) openOf.set(`(e) Transfers\0${value}`, `(e) Transfers: safeguard not declared for ${who}`);
+        return { value, source: t.source };
       })
     );
     const rows = [];
+    const open3 = [];
+    const flag = (item) => {
+      if (!open3.includes(item)) open3.push(item);
+    };
     const add = (item, cands, empty) => {
       const all = cands.length > 0 ? cands : [{ value: empty ?? TO_COMPLETE, source: NO_SOURCE }];
-      all.forEach((c, i) => rows.push({ item: i === 0 ? item : "", value: c.value, source: c.source }));
+      all.forEach((c, i) => {
+        rows.push({ item: i === 0 ? item : "", value: c.value, source: c.source });
+        if (NOT_COUNTED.has(item)) return;
+        if (c.value === TO_COMPLETE) flag(item);
+        const detail = openOf.get(`${item}\0${c.value}`);
+        if (detail !== void 0) flag(detail);
+      });
     };
-    add("(a) Controller", [{ value: `${p.controller.name}, ${p.controller.contact}`, source: processingSource(p.source) }]);
+    const controller = `${filled(p.controller.name)}, ${filled(p.controller.contact)}`;
+    if (isPlaceholder(p.controller.name) || isPlaceholder(p.controller.contact)) openOf.set(`(a) Controller\0${controller}`, "(a) Controller");
+    add("(a) Controller", [{ value: controller, source: processingSource(p.source) }]);
     add("(a) Joint controller", []);
     add("(a) Representative", []);
-    add("(a) Data protection officer", p.dpo ? [{ value: `${p.dpo.name}, ${p.dpo.contact}`, source: processingSource(p.source) }] : []);
+    if (p.dpo && (isPlaceholder(p.dpo.name) || isPlaceholder(p.dpo.contact))) openOf.set(`(a) Data protection officer\0${filled(p.dpo.name)}, ${filled(p.dpo.contact)}`, "(a) Data protection officer");
+    add("(a) Data protection officer", p.dpo ? [{ value: `${filled(p.dpo.name)}, ${filled(p.dpo.contact)}`, source: processingSource(p.source) }] : []);
     add("(b) Purposes", [{ value: p.purpose, source: processingSource(p.source) }]);
     add("(c) Data subjects", atomic(subjects));
     add("(c) Personal data", composite(personal));
     add("(d) Recipients", atomic(recipientCands), NONE_IDENTIFIED);
     add("(e) Transfers", transfers, NONE_IDENTIFIED);
+    if (p.retention?.duration === "unknown") openOf.set(`(f) Erasure time limits\0${duration(p.retention)}`, "(f) Erasure time limits: unknown");
     add("(f) Erasure time limits", p.retention ? [{ value: duration(p.retention), source: processingSource(p.retention.source) }] : composite(storageRows));
     add("(g) Security measures", atomic((p.security_measures ?? []).map((s) => ({ value: s.measure, source: processingSource(s.source) }))));
     return {
       id: cell(p.id),
       name: cell(p.name),
-      rows: rows.map((r) => ({ item: cell(r.item), value: cell(r.value), source: cell(r.source) }))
+      rows: rows.map((r) => ({ item: cell(r.item), value: cell(r.value), source: cell(r.source) })),
+      open: { id: p.id, name: p.name, items: open3 }
     };
   });
   let template = readFileSync4(TEMPLATE_URL, "utf8");
   if (Object.keys(sortedAnchors).length === 0) template = template.replace(/^anchors:\n\{\{#each anchors\}\}\n[\s\S]*?\{\{\/each\}\}\n/m, "anchors: {}\n");
+  const open2 = sections.map((x) => x.open);
+  const count = open2.reduce((n, x) => n + x.items.length, 0);
   const markdown = renderTemplate(template, {
     spec_version: SPEC_VERSION,
     generated_at: generatedAt,
+    open_items: String(count),
+    open_summary: openSummary(count, open2.filter((x) => x.items.length > 0).length, open2.length),
+    open: open2.map((x) => ({ name: cell(`${x.name} (${x.id})`), items: cell(x.items.length > 0 ? x.items.join("; ") : "None") })),
     organisation: cell(compliance.organisation.name),
     anchors: Object.entries(sortedAnchors).map(([repo, sha]) => ({ repo, sha: JSON.stringify(sha) })),
-    processings: sections
+    processings: sections.map(({ id, name, rows }) => ({ id, name, rows }))
   });
-  return { markdown, anchors: sortedAnchors };
+  return { markdown, anchors: sortedAnchors, open: open2 };
 }
 function anchorsYaml(anchors, generatedAt) {
   const doc = {
@@ -41198,7 +41243,7 @@ async function runRegister(o) {
     return;
   }
   const generatedAt = o.generatedAt || await mustGit(git, ["log", "-1", "--format=%cI"], root);
-  const { markdown, anchors } = buildRegister(root, generatedAt);
+  const { markdown, anchors, open: open2 } = buildRegister(root, generatedAt);
   mkdirSync2(join3(root, "documents"), { recursive: true });
   writeNoFollow(join3(root, "documents", "register.md"), markdown);
   writeNoFollow(join3(root, "anchors.yaml"), anchorsYaml(anchors, generatedAt));
@@ -41213,8 +41258,10 @@ async function runRegister(o) {
     "",
     `- Generated at: \`${generatedAt}\``,
     `- Repos documented: ${Object.keys(anchors).length > 0 ? Object.entries(anchors).map(([r, sha]) => `\`${r}\` at \`${sha.slice(0, 7)}\``).join(", ") : "none"}`,
+    `- Open items: ${openSummary(open2.reduce((n, x) => n + x.items.length, 0), open2.filter((x) => x.items.length > 0).length, open2.length)}`,
+    ...open2.filter((x) => x.items.length > 0).map((x) => `  - ${codeSpan(`${x.name} (${x.id})`)}: ${x.items.map(codeSpan).join(", ")}`),
     "",
-    "This document is prepared for review by the controller and its data protection officer. It does not certify compliance with the GDPR. Rows marked `To complete` have no source and need a person.",
+    "This document is prepared for review by the controller and its data protection officer. It does not certify compliance with the GDPR. Open items are listed first in the register: rows marked `To complete` have no source and need a person, and joint controller and representative are always to confirm by hand.",
     "",
     "Merging this pull request records `anchors.yaml`: the lag of each service then restarts from 0. Written by compliance-action; do not edit `documents/register.md` or `anchors.yaml` by hand."
   ].join("\n");
